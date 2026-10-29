@@ -1,0 +1,24 @@
+# Maven build output
+target/
+build/
+out/
+
+# Compiled Java files
+*.class
+
+# Application logs
+*.log
+
+# macOS files
+.DS_Store
+
+# IDE settings
+.idea/
+.vscode/
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
