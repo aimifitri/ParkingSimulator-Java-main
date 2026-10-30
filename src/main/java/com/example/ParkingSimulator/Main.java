@@ -1,10 +1,13 @@
 package com.example.ParkingSimulator;
 
 import javafx.animation.PauseTransition;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -22,6 +25,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
@@ -36,6 +40,7 @@ import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
@@ -59,25 +64,34 @@ import java.util.Optional;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class Main extends Application implements ParkingListener {
 	private static final int MAX_LOG_ENTRIES = 100;
+	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
 	private static final DateTimeFormatter LOG_TIME = DateTimeFormatter.ofPattern("HH:mm:ss");
+	private enum SimulationState { IDLE, RUNNING, STOPPED }
 
 	private AppShell appShell;
 	private Node setupView;
 	private Button launchButton;
+	private Label launchFeedback;
 	private BorderPane dashboardBody;
 	private HBox dashboardCenter;
+	private ScrollPane dashboardWorkspaceScroll;
+	private final ScrollPane analyticsPageScroll = new ScrollPane();
 	private VBox parkingLotPanel;
+	private VBox parkingLotsGridPanel;
 	private boolean simulationLaunched;
-	private boolean analyticsExpandedOnDashboard;
+	private boolean analyticsExpandedOnDashboard = true;
 	private CustomRectangle[] slots;
 	private final Map<Integer, CustomRectangle> slotTiles = new HashMap<>();
-	private GridPane parkingGrid;
+	private TilePane parkingGrid;
+	private HBox parkingGridLegendAndFilter;
 	private ComboBox<String> spaceFilter;
 	private int selectedSpaceNumber = -1;
-	private VBox parkingLotsPage;
+	private ScrollPane parkingLotsPage;
 	private HBox parkingLotsContentRow;
 	private VBox spaceDetailsPanel;
 	private Label lotTotalValue;
@@ -89,6 +103,48 @@ public class Main extends Application implements ParkingListener {
 	private Label selectedSpaceReservation;
 	private Label selectedSpaceMessage;
 	private Button reserveSelectedButton;
+	private Label dashboardRunStateValue;
+	private Label dashboardActivityStateValue;
+	private Label dashboardOccupancySummary;
+	private ProgressBar dashboardOccupancyProgress;
+	private ScrollPane simulationMonitorView;
+	private Label monitorStateValue;
+	private Label monitorElapsedValue;
+	private Label monitorCapacityValue;
+	private Label monitorOccupiedValue;
+	private Label monitorAvailableValue;
+	private Label monitorReservedValue;
+	private Label monitorWaitingValue;
+	private Label monitorExitsValue;
+	private Label monitorAverageWaitValue;
+	private Label monitorStrategyValue;
+	private Button monitorStartButton;
+	private Button monitorStopButton;
+	private Button monitorResetButton;
+	private TilePane monitorSpaceTiles;
+	private final Map<Integer, CustomRectangle> monitorSlotTiles = new HashMap<>();
+	private final ListView<String> monitorActivityLog = new ListView<>();
+	private final javafx.collections.ObservableList<String> activityEntries = FXCollections.observableArrayList();
+	private ScrollPane reportsPage;
+	private Label reportCapacityValue;
+	private Label reportOccupiedValue;
+	private Label reportWaitingValue;
+	private Label reportDeparturesValue;
+	private Label reportAverageWaitValue;
+	private Label reportReservationsValue;
+	private LineChart<Number, Number> reportsOccupancyChart;
+	private XYChart.Series<Number, Number> reportsActualOccupancySeries;
+	private VBox reportOccupancyEmptyState;
+	private VBox reportActivityRows;
+	private VBox reportReservationRows;
+	private Label reportActivityCount;
+	private Label reportReservationCount;
+	private Timeline monitorElapsedTimeline;
+	private SimulationState simulationState = SimulationState.IDLE;
+	private long elapsedAtStopMillis;
+	private int completedVehicleExits;
+	private double averageQueueWaitMillis;
+	private int lastReportedWaitingCount;
 	private int syncStrategy = 1; // 1 = Semaphore, 2 = Mutex
 	private int numCars = 10;
 	private int nbrPlaces = 5;
@@ -104,7 +160,7 @@ public class Main extends Application implements ParkingListener {
 	private long simulationStartedNanos;
 
 	// UI Controls
-	private final ListView<String> activityLog = new ListView<>();
+	private VBox dashboardActivityEntries;
 	private final Label totalSlotsValue = metricValue("0");
 	private final Label occupiedValue = metricValue("0");
 	private final Label availableValue = metricValue("0");
@@ -122,19 +178,32 @@ public class Main extends Application implements ParkingListener {
 	private ComboBox<LocalTime> historicalTimeSelector;
 	private Label historicalPredictionLabel;
 	private Label historicalModelScoreLabel;
-	private final ScrollPane analyticsPanel = new ScrollPane();
+	private String historicalDataUnavailableMessage = "Historical occupancy data is unavailable.";
+	private final VBox analyticsPanel = new VBox(16);
 	private final VBox analyticsContent = new VBox(16);
+	private VBox predictionsPageContent;
+	private Label predictionCurrentOccupancyValue;
+	private Label predictionPeakOccupancyValue;
+	private Label predictionAvailableAtPeakValue;
+	private Label predictionPeakHorizonCaption;
+	private Label predictionCurrentCaption;
+	private LineChart<Number, Number> forecastChart;
 
 	@Override
 	public void start(Stage primaryStage) {
 		try (InputStream dataset = getClass().getResourceAsStream("parking-birmingham.csv")) {
 			historicalOccupancyPredictor = HistoricalOccupancyPredictor.load(dataset);
 		} catch (IOException e) {
-			throw new IllegalStateException("Unable to load the bundled Birmingham parking occupancy data", e);
+			historicalOccupancyPredictor = null;
+			historicalDataUnavailableMessage = "Historical occupancy data could not be loaded. The bundled Birmingham dataset is required for this view.";
 		}
 		Parking.configureLogging();
 		appShell = new AppShell(this::navigateTo);
 		configureAnalyticsPanel();
+		activityEntries.addListener((ListChangeListener<String>) change -> {
+			refreshDashboardActivityEntries();
+			refreshReportsPage();
+		});
 		showConfigurationScreen(AppShell.Page.DASHBOARD);
 
 		Scene scene = new Scene(appShell, 1280, 860);
@@ -225,9 +294,9 @@ public class Main extends Application implements ParkingListener {
 		presetsBox.setAlignment(Pos.CENTER_LEFT);
 		HBox reservationsRow = new HBox(manageReservationsButton);
 		reservationsRow.setAlignment(Pos.CENTER_LEFT);
-		Label validationMessage = new Label();
-		validationMessage.getStyleClass().add("validation-message");
-		validationMessage.setWrapText(true);
+		launchFeedback = new Label();
+		launchFeedback.getStyleClass().add("validation-message");
+		launchFeedback.setWrapText(true);
 
 		launchButton = new Button("Launch Simulation");
 		launchButton.getStyleClass().add("primary-button");
@@ -240,14 +309,14 @@ public class Main extends Application implements ParkingListener {
 			Integer configuredSeed = readSpinnerValue(seedSpinner, 0, Integer.MAX_VALUE);
 			if (configuredCars == null || configuredSlots == null || configuredArrivalWindow == null
 					|| configuredParkingDuration == null || configuredSeed == null) {
-				validationMessage.setText("Use whole numbers: 1–100 vehicles, 1–50 spaces, 1–60 seconds for timing, and a seed from 0 to 2,147,483,647.");
+				launchFeedback.setText("Use whole numbers: 1–100 vehicles, 1–50 spaces, 1–60 seconds for timing, and a seed from 0 to 2,147,483,647.");
 				return;
 			}
 			if (!reservationManager.setCapacity(configuredSlots)) {
-				validationMessage.setText("Cannot reduce capacity below the slot numbers used by existing reservations. Cancel or move those reservations first.");
+				launchFeedback.setText("Cannot reduce capacity below the slot numbers used by existing reservations. Cancel or move those reservations first.");
 				return;
 			}
-			validationMessage.setText("");
+			launchFeedback.setText("");
 			syncStrategy = semRadio.isSelected() ? 1 : 2;
 			numCars = configuredCars;
 			nbrPlaces = configuredSlots;
@@ -258,7 +327,7 @@ public class Main extends Application implements ParkingListener {
 		});
 
 		VBox configCard = new VBox(20, header, strategyLabel, strategyBox, paramsLabel, paramsBox, presetsBox,
-				reservationsRow, timingBox, validationMessage, launchButton);
+				reservationsRow, timingBox, launchFeedback, launchButton);
 		configCard.getStyleClass().add("panel");
 		configCard.setMaxWidth(800);
 		configCard.setPadding(new Insets(30));
@@ -288,6 +357,9 @@ public class Main extends Application implements ParkingListener {
 	}
 
 	private void navigateTo(AppShell.Page page) {
+		if (page != AppShell.Page.SIMULATION_MONITOR && monitorElapsedTimeline != null) {
+			monitorElapsedTimeline.stop();
+		}
 		switch (page) {
 			case DASHBOARD -> {
 				if (!simulationLaunched) {
@@ -306,11 +378,9 @@ public class Main extends Application implements ParkingListener {
 						dashboardCenter.getChildren().remove(parkingLotPanel);
 						dashboardCenter.getChildren().remove(analyticsPanel);
 					}
-					if (parkingLotsContentRow != null
-							&& !parkingLotsContentRow.getChildren().contains(parkingLotPanel)) {
-						parkingLotsContentRow.getChildren().add(0, parkingLotPanel);
-					}
-					appShell.showPage(page, createParkingLotsPage());
+					ScrollPane lotsPage = createParkingLotsPage();
+					attachParkingLotsPanels();
+					appShell.showPage(page, lotsPage);
 					refreshParkingLotState();
 				}
 			}
@@ -319,40 +389,295 @@ public class Main extends Application implements ParkingListener {
 				if (dashboardCenter != null) {
 					dashboardCenter.getChildren().remove(analyticsPanel);
 				}
+				ensurePredictionsPage();
+				setPredictionsAnalyticsLayout(true);
+				refreshPredictionSummary();
+				analyticsPageScroll.setContent(predictionsPageContent);
+				analyticsPageScroll.setFitToWidth(true);
+				if (!analyticsPageScroll.getStyleClass().contains("analytics-scroll")) {
+					analyticsPageScroll.getStyleClass().add("analytics-scroll");
+				}
 				analyticsPanel.setVisible(true);
 				analyticsPanel.setManaged(true);
-				appShell.showPage(page, analyticsPanel);
+				appShell.showPage(page, analyticsPageScroll);
 			}
-			case SIMULATION_MONITOR -> appShell.showPage(page,
-					new PlaceholderView("Simulation monitor is planned",
-							"The live activity log remains on Dashboard. Thread lifecycle controls and worker details will be added in a later phase."));
-			case REPORTS -> appShell.showPage(page,
-					new PlaceholderView("Reports are planned",
-							"This page will present reservation and occupancy summaries after reporting views are implemented."));
+			case SIMULATION_MONITOR -> {
+				appShell.showPage(page, showSimulationMonitor());
+				if (simulationState == SimulationState.RUNNING) {
+					monitorElapsedTimeline.play();
+				}
+			}
+			case REPORTS -> {
+				appShell.showPage(page, createReportsPage());
+				refreshReportsPage();
+			}
 			case SETTINGS -> showConfigurationScreen(AppShell.Page.SETTINGS);
 		}
 	}
 
-	private VBox createParkingLotsPage() {
+	private Node showSimulationMonitor() {
+		if (simulationMonitorView == null) {
+			simulationMonitorView = createSimulationMonitorView();
+			monitorElapsedTimeline = new Timeline(new KeyFrame(Duration.seconds(1), event -> refreshMonitorElapsed()));
+			monitorElapsedTimeline.setCycleCount(Timeline.INDEFINITE);
+		}
+		refreshSimulationMonitor();
+		return simulationMonitorView;
+	}
+
+	private ScrollPane createSimulationMonitorView() {
+		monitorStateValue = new Label();
+		monitorStateValue.getStyleClass().add("monitor-state-pill");
+		monitorElapsedValue = metricValue("0.0 s");
+		monitorStartButton = new Button("Start simulation");
+		monitorStartButton.getStyleClass().add("primary-button");
+		monitorStartButton.setOnAction(event -> startSimulationFromMonitor());
+		monitorStopButton = new Button("Stop simulation");
+		monitorStopButton.getStyleClass().add("secondary-button");
+		monitorStopButton.setOnAction(event -> stopSimulation());
+		monitorResetButton = new Button("Reset run");
+		monitorResetButton.getStyleClass().add("secondary-button");
+		monitorResetButton.setOnAction(event -> {
+			restartSimulation();
+			if (simulationState == SimulationState.RUNNING && monitorElapsedTimeline != null) {
+				monitorElapsedTimeline.play();
+			}
+		});
+
+		Label controlsTitle = new Label("Simulation controls");
+		controlsTitle.getStyleClass().add("section-title");
+		Label stateCaption = new Label("Current state");
+		stateCaption.getStyleClass().add("section-caption");
+		Label elapsedCaption = new Label("Elapsed");
+		elapsedCaption.getStyleClass().add("section-caption");
+		VBox stateBox = new VBox(5, stateCaption, monitorStateValue);
+		VBox elapsedBox = new VBox(5, elapsedCaption, monitorElapsedValue);
+		HBox actions = new HBox(8, monitorStartButton, monitorStopButton, monitorResetButton);
+		actions.setAlignment(Pos.CENTER_LEFT);
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		HBox statusRow = new HBox(18, stateBox, elapsedBox, spacer, actions);
+		statusRow.setAlignment(Pos.CENTER_LEFT);
+		VBox controls = new VBox(12, controlsTitle, statusRow);
+		controls.getStyleClass().add("panel");
+
+		monitorCapacityValue = metricValue("0");
+		monitorOccupiedValue = metricValue("0");
+		monitorAvailableValue = metricValue("0");
+		monitorReservedValue = metricValue("0");
+		monitorWaitingValue = metricValue("0");
+		monitorExitsValue = metricValue("0");
+		monitorAverageWaitValue = metricValue("0.00 s");
+		monitorStrategyValue = metricValue("SEMAPHORE");
+		GridPane metrics = new GridPane();
+		metrics.setHgap(10);
+		metrics.setVgap(10);
+		metrics.add(monitorMetric("CAPACITY", monitorCapacityValue, "Configured spaces"), 0, 0);
+		metrics.add(monitorMetric("OCCUPIED", monitorOccupiedValue, "Currently parked"), 1, 0);
+		metrics.add(monitorMetric("AVAILABLE", monitorAvailableValue, "Ready to use"), 2, 0);
+		metrics.add(monitorMetric("RESERVED", monitorReservedValue, "Unoccupied with future bookings"), 3, 0);
+		metrics.add(monitorMetric("WAITING", monitorWaitingValue, "Vehicles in queue"), 0, 1);
+		metrics.add(monitorMetric("COMPLETED EXITS", monitorExitsValue, "Vehicles that departed"), 1, 1);
+		metrics.add(monitorMetric("AVG. WAIT", monitorAverageWaitValue, "Completed parking visits"), 2, 1);
+		metrics.add(monitorMetric("STRATEGY", monitorStrategyValue, "Concurrency control"), 3, 1);
+		for (int column = 0; column < 4; column++) {
+			ColumnConstraints constraints = new ColumnConstraints();
+			constraints.setPercentWidth(25);
+			constraints.setHgrow(Priority.ALWAYS);
+			metrics.getColumnConstraints().add(constraints);
+		}
+
+		Label spacesTitle = new Label("Parking space status");
+		spacesTitle.getStyleClass().add("section-title");
+		HBox legend = new HBox(12,
+				legendDot("available-dot"), new Label("Available"),
+				legendDot("occupied-dot"), new Label("Occupied"),
+				legendDot("reserved-dot"), new Label("Reserved"));
+		legend.getStyleClass().add("legend");
+		legend.setAlignment(Pos.CENTER_LEFT);
+		monitorSpaceTiles = new TilePane();
+		monitorSpaceTiles.setPrefColumns(4);
+		monitorSpaceTiles.setHgap(9);
+		monitorSpaceTiles.setVgap(9);
+		monitorSpaceTiles.setAlignment(Pos.TOP_LEFT);
+		ScrollPane spaceScroll = new ScrollPane(monitorSpaceTiles);
+		spaceScroll.setFitToWidth(true);
+		spaceScroll.setPrefHeight(310);
+		spaceScroll.getStyleClass().add("lot-scroll");
+		VBox spaces = new VBox(12, spacesTitle, legend, spaceScroll);
+		spaces.getStyleClass().add("panel");
+		spaces.setMinWidth(490);
+		HBox.setHgrow(spaces, Priority.ALWAYS);
+
+		Label activityTitle = new Label("Recent activity");
+		activityTitle.getStyleClass().add("section-title");
+		monitorActivityLog.setItems(activityEntries);
+		monitorActivityLog.getStyleClass().add("activity-log");
+		monitorActivityLog.setPlaceholder(new Label("Simulation events will appear here."));
+		monitorActivityLog.setFocusTraversable(false);
+		monitorActivityLog.setPrefHeight(340);
+		monitorActivityLog.setMinHeight(240);
+		VBox activity = new VBox(12, activityTitle, monitorActivityLog);
+		activity.getStyleClass().add("panel");
+		activity.setMinWidth(270);
+		activity.setPrefWidth(330);
+		VBox.setVgrow(monitorActivityLog, Priority.ALWAYS);
+		HBox live = new HBox(14, spaces, activity);
+		live.setAlignment(Pos.TOP_LEFT);
+		VBox.setVgrow(live, Priority.ALWAYS);
+
+		VBox content = new VBox(14, controls, metrics, live);
+		content.setPadding(new Insets(0, 2, 2, 2));
+		content.setFillWidth(true);
+		ScrollPane scroll = new ScrollPane(content);
+		scroll.setFitToWidth(true);
+		scroll.getStyleClass().add("monitor-scroll");
+		VBox.setVgrow(scroll, Priority.ALWAYS);
+		refreshSimulationMonitor();
+		return scroll;
+	}
+
+	private VBox monitorMetric(String title, Label value, String caption) {
+		VBox card = createMetricCard(title, value, caption);
+		card.setMinWidth(0);
+		card.setMaxWidth(Double.MAX_VALUE);
+		return card;
+	}
+
+	private void startSimulationFromMonitor() {
+		if (simulationState == SimulationState.RUNNING) {
+			return;
+		}
+		try {
+			if (!simulationLaunched) {
+				prepareLiveDashboard();
+			}
+			startSimulation();
+			if (monitorElapsedTimeline != null) {
+				monitorElapsedTimeline.play();
+			}
+			refreshSimulationMonitor();
+		} catch (RuntimeException exception) {
+			rollbackFailedLaunch();
+			showSimulationStartError(exception);
+		}
+	}
+
+	private void showSimulationStartError(RuntimeException exception) {
+		String detail = exception.getMessage() == null || exception.getMessage().isBlank()
+				? exception.getClass().getSimpleName() : exception.getMessage();
+		LOGGER.log(Level.SEVERE, "Simulation start failed", exception);
+		if (launchFeedback != null) {
+			launchFeedback.setText("Simulation could not start: " + detail + " Check the application log for details.");
+			appShell.showPage(AppShell.Page.SETTINGS, setupView);
+		} else {
+			javafx.scene.control.Alert alert = new javafx.scene.control.Alert(
+					javafx.scene.control.Alert.AlertType.ERROR,
+					"Simulation could not start: " + detail + "\nCheck the application log for details.");
+			alert.setHeaderText("Simulation start failed");
+			alert.show();
+		}
+	}
+
+	private void refreshSimulationMonitor() {
+		if (monitorStateValue == null) {
+			return;
+		}
+		monitorStateValue.setText(switch (simulationState) {
+			case IDLE -> "IDLE";
+			case RUNNING -> "RUNNING";
+			case STOPPED -> "STOPPED";
+		});
+		monitorStateValue.getStyleClass().removeAll("monitor-state-idle", "monitor-state-running", "monitor-state-stopped");
+		monitorStateValue.getStyleClass().add(switch (simulationState) {
+			case IDLE -> "monitor-state-idle";
+			case RUNNING -> "monitor-state-running";
+			case STOPPED -> "monitor-state-stopped";
+		});
+		monitorStartButton.setDisable(simulationState == SimulationState.RUNNING);
+		monitorStopButton.setDisable(simulationState != SimulationState.RUNNING);
+		monitorResetButton.setDisable(simulationState == SimulationState.IDLE);
+
+		Parking.SpaceSnapshot snapshot = currentSpaceSnapshot();
+		monitorCapacityValue.setText(String.valueOf(snapshot.totalCount()));
+		monitorOccupiedValue.setText(String.valueOf(snapshot.occupiedCount()));
+		monitorAvailableValue.setText(String.valueOf(snapshot.availableCount()));
+		monitorReservedValue.setText(String.valueOf(snapshot.reservedCount()));
+		monitorWaitingValue.setText(String.valueOf(snapshot.waitingCount()));
+		monitorExitsValue.setText(String.valueOf(completedVehicleExits));
+		monitorAverageWaitValue.setText(String.format(Locale.ROOT, "%.2f s", averageQueueWaitMillis / 1000.0));
+		monitorStrategyValue.setText(syncStrategy == 1 ? "SEMAPHORE" : "MUTEX");
+		ensureMonitorSpaceTiles(snapshot.totalCount());
+		for (Parking.SpaceState state : snapshot.spaces()) {
+			CustomRectangle tile = monitorSlotTiles.get(state.slotNumber());
+			if (tile != null) {
+				Reservation upcoming = state.reservations().stream().findFirst().orElse(null);
+				tile.render(state.status(), state.vehicleId(), upcoming, false);
+			}
+		}
+		refreshMonitorElapsed();
+	}
+
+	private void ensureMonitorSpaceTiles(int capacity) {
+		if (monitorSpaceTiles == null || monitorSlotTiles.size() == capacity) {
+			return;
+		}
+		monitorSlotTiles.clear();
+		monitorSpaceTiles.getChildren().clear();
+		for (int slotNumber = 1; slotNumber <= capacity; slotNumber++) {
+			CustomRectangle tile = new CustomRectangle(slotNumber);
+			tile.setFocusTraversable(false);
+			monitorSlotTiles.put(slotNumber, tile);
+			monitorSpaceTiles.getChildren().add(tile);
+		}
+	}
+
+	private void refreshMonitorElapsed() {
+		if (monitorElapsedValue == null) {
+			return;
+		}
+		long elapsedMillis = simulationState == SimulationState.RUNNING
+				? java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - simulationStartedNanos)
+				: elapsedAtStopMillis;
+		monitorElapsedValue.setText(String.format(Locale.ROOT, "%.1f s", elapsedMillis / 1000.0));
+	}
+
+	private ScrollPane createParkingLotsPage() {
 		if (parkingLotsPage == null) {
 			lotTotalValue = metricValue("0");
 			lotAvailableValue = metricValue("0");
 			lotOccupiedValue = metricValue("0");
 			lotReservedValue = metricValue("0");
 			HBox summary = new HBox(12,
-					createMetricCard("TOTAL SPACES", lotTotalValue, "Configured capacity"),
+					createMetricCard("TOTAL CAPACITY", lotTotalValue, "Configured spaces"),
 					createMetricCard("AVAILABLE", lotAvailableValue, "Ready to reserve"),
 					createMetricCard("OCCUPIED", lotOccupiedValue, "In active use"),
 					createMetricCard("RESERVED", lotReservedValue, "Unoccupied with future bookings"));
 			summary.getStyleClass().add("metrics-row");
 
+			Label spacesTitle = new Label("Parking space status");
+			spacesTitle.getStyleClass().add("section-title");
+			Label spacesCaption = new Label("Select a space to inspect its current status and reservation details.");
+			spacesCaption.getStyleClass().add("section-caption");
+			spacesCaption.setWrapText(true);
+			parkingLotPanel.getChildren().removeAll(parkingGridLegendAndFilter, parkingGrid);
+			parkingLotsGridPanel = new VBox(12, spacesTitle, spacesCaption,
+					parkingGridLegendAndFilter, parkingGrid);
+			parkingLotsGridPanel.getStyleClass().addAll("panel", "parking-lots-grid-card");
+			parkingLotsGridPanel.setMinWidth(0);
+			HBox.setHgrow(parkingLotsGridPanel, Priority.ALWAYS);
+
 			spaceDetailsPanel = createSpaceDetailsPanel();
-			parkingLotsContentRow = new HBox(16, parkingLotPanel, spaceDetailsPanel);
+			parkingLotsContentRow = new HBox(16, parkingLotsGridPanel, spaceDetailsPanel);
 			parkingLotsContentRow.setAlignment(Pos.TOP_LEFT);
-			HBox.setHgrow(parkingLotPanel, Priority.ALWAYS);
 			VBox.setVgrow(parkingLotsContentRow, Priority.ALWAYS);
-			parkingLotsPage = new VBox(14, summary, parkingLotsContentRow);
-			VBox.setVgrow(parkingLotsPage, Priority.ALWAYS);
+			VBox pageContent = new VBox(14, summary, parkingLotsContentRow);
+			pageContent.getStyleClass().add("parking-lots-page-content");
+			ScrollPane pageScroll = new ScrollPane(pageContent);
+			pageScroll.setFitToWidth(true);
+			pageScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+			pageScroll.getStyleClass().add("parking-lots-page-scroll");
+			parkingLotsPage = pageScroll;
 		}
 		return parkingLotsPage;
 	}
@@ -384,12 +709,40 @@ public class Main extends Application implements ParkingListener {
 		return details;
 	}
 
+	private void attachParkingLotsPanels() {
+		if (parkingLotsGridPanel == null || parkingLotPanel == null || parkingLotsContentRow == null) {
+			return;
+		}
+		parkingLotPanel.getChildren().removeAll(parkingGridLegendAndFilter, parkingGrid);
+		if (!parkingLotsGridPanel.getChildren().contains(parkingGridLegendAndFilter)) {
+			parkingLotsGridPanel.getChildren().add(2, parkingGridLegendAndFilter);
+		}
+		if (!parkingLotsGridPanel.getChildren().contains(parkingGrid)) {
+			parkingLotsGridPanel.getChildren().add(parkingGrid);
+		}
+		if (!parkingLotsContentRow.getChildren().contains(parkingLotsGridPanel)) {
+			parkingLotsContentRow.getChildren().add(0, parkingLotsGridPanel);
+		}
+	}
+
 	private void attachDashboardPanels() {
+		detachPredictionsAnalytics();
 		if (dashboardCenter == null) {
 			return;
 		}
 		if (parkingLotsContentRow != null) {
-			parkingLotsContentRow.getChildren().remove(parkingLotPanel);
+			parkingLotsContentRow.getChildren().remove(parkingLotsGridPanel);
+		}
+		if (parkingLotsGridPanel != null) {
+			parkingLotsGridPanel.getChildren().removeAll(parkingGridLegendAndFilter, parkingGrid);
+		}
+		if (parkingLotPanel != null) {
+			if (!parkingLotPanel.getChildren().contains(parkingGridLegendAndFilter)) {
+				parkingLotPanel.getChildren().add(parkingGridLegendAndFilter);
+			}
+			if (!parkingLotPanel.getChildren().contains(parkingGrid)) {
+				parkingLotPanel.getChildren().add(parkingGrid);
+			}
 		}
 		if (!dashboardCenter.getChildren().contains(parkingLotPanel)) {
 			dashboardCenter.getChildren().add(0, parkingLotPanel);
@@ -401,47 +754,267 @@ public class Main extends Application implements ParkingListener {
 		analyticsPanel.setManaged(analyticsExpandedOnDashboard);
 	}
 
-	private VBox createReservationsPage() {
-		Label title = new Label("Simulation reservations");
-		title.getStyleClass().add("section-title");
-		Label caption = new Label("Bookings use offsets in seconds from the next simulation start. Changes made during a run apply next run.");
-		caption.getStyleClass().add("section-caption");
-		caption.setWrapText(true);
+	private void detachPredictionsAnalytics() {
+		if (analyticsPageScroll.getContent() == predictionsPageContent) {
+			analyticsPageScroll.setContent(null);
+		}
+		if (predictionsPageContent != null) {
+			predictionsPageContent.getChildren().remove(analyticsPanel);
+		}
+		setPredictionsAnalyticsLayout(false);
+	}
 
-		ListView<Reservation> reservationList = new ListView<>();
-		Label emptyState = new Label("No reservations yet. Create a booking to reserve a numbered space.");
-		emptyState.getStyleClass().add("reservation-page-empty");
-		emptyState.setWrapText(true);
-		reservationList.setPlaceholder(emptyState);
-		reservationList.getStyleClass().add("reservation-page-list");
-		reservationList.setCellFactory(view -> new ListCell<>() {
-			@Override
-			protected void updateItem(Reservation reservation, boolean empty) {
-				super.updateItem(reservation, empty);
-				setText(empty || reservation == null ? null : String.format(
-						"Space %02d  ·  %s  ·  %d–%d sec", reservation.slotNumber(), reservation.vehicleId(),
-						reservation.startOffsetSeconds(), reservation.endOffsetSeconds()));
+	private ScrollPane createReservationsPage() {
+		Label totalReservations = metricValue("0");
+		Label bookedSpaces = metricValue("0");
+		Label nextArrival = metricValue("—");
+		HBox summary = new HBox(12,
+				createMetricCard("TOTAL BOOKINGS", totalReservations, "Scheduled reservations"),
+				createMetricCard("SPACES BOOKED", bookedSpaces, "Distinct spaces with bookings"),
+				createMetricCard("NEXT ARRIVAL", nextArrival, "Seconds from next run start"));
+		summary.getStyleClass().add("metrics-row");
+
+		Label listTitle = new Label("Scheduled reservations");
+		listTitle.getStyleClass().add("section-title");
+		Label listCount = new Label();
+		listCount.getStyleClass().add("reservation-count");
+		HBox listHeader = new HBox(12, listTitle, new Region(), listCount);
+		HBox.setHgrow(listHeader.getChildren().get(1), Priority.ALWAYS);
+		listHeader.setAlignment(Pos.CENTER_LEFT);
+		Label listCaption = new Label("Vehicle assignments and arrival intervals for the next simulation run.");
+		listCaption.getStyleClass().add("section-caption");
+		listCaption.setWrapText(true);
+		VBox reservationRows = new VBox(8);
+		reservationRows.getStyleClass().add("reservation-page-rows");
+		Runnable refreshReservations = () -> {
+			List<Reservation> reservations = reservationManager.all();
+			totalReservations.setText(String.valueOf(reservations.size()));
+			bookedSpaces.setText(String.valueOf(reservations.stream()
+					.map(Reservation::slotNumber).distinct().count()));
+			reservations.stream().mapToInt(Reservation::startOffsetSeconds).min()
+					.ifPresentOrElse(offset -> nextArrival.setText(offset + " sec"),
+							() -> nextArrival.setText("—"));
+			listCount.setText(reservations.size()
+					+ (reservations.size() == 1 ? " reservation" : " reservations"));
+			reservationRows.getChildren().clear();
+			if (reservations.isEmpty()) {
+				Label emptyTitle = new Label("No reservations yet");
+				emptyTitle.getStyleClass().add("reservation-empty-title");
+				Label emptyDescription = new Label("Create a reservation to assign a vehicle, space, and arrival interval.");
+				emptyDescription.getStyleClass().add("section-caption");
+				emptyDescription.setWrapText(true);
+				VBox empty = new VBox(6, emptyTitle, emptyDescription);
+				empty.getStyleClass().add("reservation-page-empty-state");
+				reservationRows.getChildren().add(empty);
+			} else {
+				reservations.forEach(reservation -> reservationRows.getChildren()
+						.add(createReservationPageRow(reservation)));
 			}
-		});
-		Runnable refreshReservationList = () -> {
-			reservationList.getItems().setAll(reservationManager.all());
-			int itemCount = reservationList.getItems().size();
-			reservationList.setPrefHeight(itemCount == 0 ? 88 : Math.min(270, 44 + itemCount * 40));
 		};
-		reservationList.setMinHeight(88);
-		reservationList.setMaxHeight(270);
-		refreshReservationList.run();
+		refreshReservations.run();
 
-		Button manageButton = new Button("Manage reservations");
+		VBox listCard = new VBox(12, listHeader, listCaption, reservationRows);
+		listCard.getStyleClass().addAll("panel", "reservation-page-card");
+		Button manageButton = new Button("Create or manage reservations");
 		manageButton.getStyleClass().add("primary-button");
 		manageButton.setOnAction(event -> {
 			showReservations();
-			refreshReservationList.run();
+			refreshReservations.run();
 		});
-		VBox page = new VBox(14, title, caption, reservationList, manageButton);
-		page.getStyleClass().add("panel");
-		page.setMaxWidth(Double.MAX_VALUE);
+		HBox actions = new HBox(manageButton);
+		actions.setAlignment(Pos.CENTER_RIGHT);
+
+		VBox pageContent = new VBox(16, summary, listCard, actions);
+		pageContent.getStyleClass().add("reservations-page-content");
+		ScrollPane page = new ScrollPane(pageContent);
+		page.setFitToWidth(true);
+		page.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		page.getStyleClass().add("reservations-page-scroll");
 		return page;
+	}
+
+	private HBox createReservationPageRow(Reservation reservation) {
+		Label vehicle = new Label(reservation.vehicleId());
+		vehicle.getStyleClass().add("reservation-row-vehicle");
+		Label interval = new Label(String.format(Locale.ROOT,
+				"Arrival +%d sec · ends +%d sec · %d sec duration",
+				reservation.startOffsetSeconds(), reservation.endOffsetSeconds(), reservation.durationSeconds()));
+		interval.getStyleClass().add("reservation-row-interval");
+		VBox booking = new VBox(5, vehicle, interval);
+		booking.setMaxWidth(Double.MAX_VALUE);
+		HBox.setHgrow(booking, Priority.ALWAYS);
+		Label space = new Label(String.format(Locale.ROOT, "SPACE S%02d", reservation.slotNumber()));
+		space.getStyleClass().add("reservation-space-chip");
+		HBox row = new HBox(14, booking, space);
+		row.setAlignment(Pos.CENTER_LEFT);
+		row.getStyleClass().add("reservation-page-row");
+		return row;
+	}
+
+	private ScrollPane createReportsPage() {
+		if (reportsPage != null) {
+			return reportsPage;
+		}
+		reportCapacityValue = metricValue("—");
+		reportOccupiedValue = metricValue("—");
+		reportWaitingValue = metricValue("—");
+		reportDeparturesValue = metricValue("—");
+		reportAverageWaitValue = metricValue("—");
+		reportReservationsValue = metricValue("0");
+		HBox firstMetrics = new HBox(12,
+				createMetricCard("CAPACITY", reportCapacityValue, "Configured parking spaces"),
+				createMetricCard("OCCUPIED NOW", reportOccupiedValue, "Occupied spaces / capacity"),
+				createMetricCard("WAITING NOW", reportWaitingValue, "Vehicles in the live queue"));
+		HBox secondMetrics = new HBox(12,
+				createMetricCard("COMPLETED DEPARTURES", reportDeparturesValue, "Departures in this run"),
+				createMetricCard("AVERAGE QUEUE WAIT", reportAverageWaitValue, "Completed parking visits"),
+				createMetricCard("RESERVATIONS ON FILE", reportReservationsValue, "Configured booking records"));
+		firstMetrics.getStyleClass().add("metrics-row");
+		secondMetrics.getStyleClass().add("metrics-row");
+
+		Label runNote = new Label("Simulation metrics describe the current or most recently started run. A new run resets its counters.");
+		runNote.getStyleClass().add("section-caption");
+		runNote.setWrapText(true);
+		VBox summary = new VBox(10, firstMetrics, secondMetrics, runNote);
+		summary.getStyleClass().add("reports-summary");
+
+		NumberAxis timeAxis = new NumberAxis();
+		timeAxis.setLabel("Elapsed simulation time (seconds)");
+		NumberAxis occupancyAxis = new NumberAxis();
+		occupancyAxis.setLabel("Occupied spaces");
+		occupancyAxis.setForceZeroInRange(true);
+		reportsOccupancyChart = new LineChart<>(timeAxis, occupancyAxis);
+		reportsOccupancyChart.setAnimated(false);
+		reportsOccupancyChart.setCreateSymbols(true);
+		reportsOccupancyChart.setLegendVisible(true);
+		reportsOccupancyChart.setPrefHeight(310);
+		reportsOccupancyChart.setMinHeight(260);
+		reportsOccupancyChart.getStyleClass().add("reports-occupancy-chart");
+		reportsActualOccupancySeries = new XYChart.Series<>();
+		reportsActualOccupancySeries.setName("Actual occupancy");
+		reportsOccupancyChart.getData().add(reportsActualOccupancySeries);
+		Label chartEmptyTitle = new Label("No simulation run to report yet");
+		chartEmptyTitle.getStyleClass().add("reservation-empty-title");
+		Label chartEmptyDescription = new Label("Start a simulation to record actual occupancy and vehicle departure metrics.");
+		chartEmptyDescription.getStyleClass().add("section-caption");
+		chartEmptyDescription.setWrapText(true);
+		reportOccupancyEmptyState = new VBox(6, chartEmptyTitle, chartEmptyDescription);
+		reportOccupancyEmptyState.getStyleClass().add("reports-empty-state");
+		Label chartTitle = new Label("Actual occupancy over time");
+		chartTitle.getStyleClass().add("section-title");
+		Label chartCaption = new Label("Recorded occupied-space counts from parking and departure events in the current run.");
+		chartCaption.getStyleClass().add("section-caption");
+		chartCaption.setWrapText(true);
+		VBox chartCard = new VBox(10, chartTitle, chartCaption, reportsOccupancyChart, reportOccupancyEmptyState);
+		chartCard.getStyleClass().addAll("panel", "reports-card");
+
+		Label activityTitle = new Label("Recent simulation activity");
+		activityTitle.getStyleClass().add("section-title");
+		reportActivityCount = new Label();
+		reportActivityCount.getStyleClass().add("reservation-count");
+		HBox activityHeader = new HBox(10, activityTitle, new Region(), reportActivityCount);
+		HBox.setHgrow(activityHeader.getChildren().get(1), Priority.ALWAYS);
+		activityHeader.setAlignment(Pos.CENTER_LEFT);
+		Label activityCaption = new Label("Recorded events are retained in memory for the current run (up to 100 entries).");
+		activityCaption.getStyleClass().add("section-caption");
+		activityCaption.setWrapText(true);
+		reportActivityRows = new VBox(6);
+		reportActivityRows.getStyleClass().add("reports-activity-rows");
+		VBox activityCard = new VBox(10, activityHeader, activityCaption, reportActivityRows);
+		activityCard.getStyleClass().addAll("panel", "reports-card");
+
+		Label reservationTitle = new Label("Reservation activity");
+		reservationTitle.getStyleClass().add("section-title");
+		reportReservationCount = new Label();
+		reportReservationCount.getStyleClass().add("reservation-count");
+		HBox reservationHeader = new HBox(10, reservationTitle, new Region(), reportReservationCount);
+		HBox.setHgrow(reservationHeader.getChildren().get(1), Priority.ALWAYS);
+		reservationHeader.setAlignment(Pos.CENTER_LEFT);
+		Label reservationCaption = new Label("Bookings currently stored for the simulation schedule.");
+		reservationCaption.getStyleClass().add("section-caption");
+		reservationCaption.setWrapText(true);
+		reportReservationRows = new VBox(8);
+		reportReservationRows.getStyleClass().add("reports-reservation-rows");
+		VBox reservationCard = new VBox(10, reservationHeader, reservationCaption, reportReservationRows);
+		reservationCard.getStyleClass().addAll("panel", "reports-card");
+
+		VBox content = new VBox(14, summary, chartCard, activityCard, reservationCard);
+		content.getStyleClass().add("reports-page-content");
+		ScrollPane scroll = new ScrollPane(content);
+		scroll.setFitToWidth(true);
+		scroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		scroll.getStyleClass().add("reports-page-scroll");
+		reportsPage = scroll;
+		refreshReportsPage();
+		return reportsPage;
+	}
+
+	private void refreshReportsPage() {
+		if (reportsPage == null) {
+			return;
+		}
+		Parking.SpaceSnapshot snapshot = currentSpaceSnapshot();
+		reportCapacityValue.setText(String.valueOf(snapshot.totalCount()));
+		if (parking == null) {
+			reportOccupiedValue.setText("—");
+			reportWaitingValue.setText("—");
+			reportDeparturesValue.setText("—");
+			reportAverageWaitValue.setText("—");
+		} else {
+			reportOccupiedValue.setText(snapshot.occupiedCount() + " / " + snapshot.totalCount());
+			reportWaitingValue.setText(String.valueOf(snapshot.waitingCount()));
+			reportDeparturesValue.setText(String.valueOf(completedVehicleExits));
+			reportAverageWaitValue.setText(completedVehicleExits == 0 ? "—"
+					: String.format(Locale.ROOT, "%.2f s", averageQueueWaitMillis / 1000.0));
+		}
+
+		List<Reservation> reservations = reservationManager.all();
+		reportReservationsValue.setText(String.valueOf(reservations.size()));
+		reportReservationCount.setText(reservations.size()
+				+ (reservations.size() == 1 ? " booking" : " bookings"));
+		reportReservationRows.getChildren().clear();
+		if (reservations.isEmpty()) {
+			reportReservationRows.getChildren().add(reportEmptyMessage("No reservation records are stored."));
+		} else {
+			reservations.forEach(reservation -> reportReservationRows.getChildren()
+					.add(createReservationPageRow(reservation)));
+		}
+
+		int eventCount = activityEntries.size();
+		reportActivityCount.setText(eventCount > 10
+				? eventCount + " events · latest 10 shown"
+				: eventCount + (eventCount == 1 ? " event" : " events"));
+		reportActivityRows.getChildren().clear();
+		if (eventCount == 0) {
+			reportActivityRows.getChildren().add(reportEmptyMessage("No simulation events have been recorded yet."));
+		} else {
+			activityEntries.stream().limit(10).map(event -> {
+				Label row = new Label(event);
+				row.getStyleClass().add("report-activity-entry");
+				row.setWrapText(true);
+				return row;
+			}).forEach(reportActivityRows.getChildren()::add);
+		}
+
+		boolean hasRunData = parking != null && actualOccupancySeries != null
+				&& !actualOccupancySeries.getData().isEmpty();
+		reportsOccupancyChart.setVisible(hasRunData);
+		reportsOccupancyChart.setManaged(hasRunData);
+		reportOccupancyEmptyState.setVisible(!hasRunData);
+		reportOccupancyEmptyState.setManaged(!hasRunData);
+		if (hasRunData) {
+			reportsActualOccupancySeries.getData().setAll(actualOccupancySeries.getData().stream()
+					.map(point -> new XYChart.Data<>(point.getXValue(), point.getYValue())).toList());
+		} else {
+			reportsActualOccupancySeries.getData().clear();
+		}
+	}
+
+	private Label reportEmptyMessage(String message) {
+		Label empty = new Label(message);
+		empty.getStyleClass().add("reports-empty-state");
+		empty.setWrapText(true);
+		return empty;
 	}
 
 	private void showReservations() {
@@ -753,10 +1326,57 @@ public class Main extends Application implements ParkingListener {
 	}
 
 	private void launchLiveDashboard() {
-		if (simulationLaunched) {
-			stopSimulation();
+		launchButton.setDisable(true);
+		String phase = "stopping the previous run";
+		try {
+			if (simulationLaunched) {
+				stopSimulation();
+			}
+			phase = "preparing Dashboard views";
+			prepareLiveDashboard();
+			phase = "initializing parking, strategy, forecast, and arrival schedule";
+			startSimulation();
+			phase = "attaching live Dashboard components";
+			attachDashboardPanels();
+			phase = "opening Dashboard";
+			appShell.showPage(AppShell.Page.DASHBOARD, dashboardBody);
+			refreshDashboardStateIndicators();
+		} catch (RuntimeException exception) {
+			rollbackFailedLaunch();
+			String detail = exception.getMessage() == null || exception.getMessage().isBlank()
+					? exception.getClass().getSimpleName() : exception.getMessage();
+			launchFeedback.setText("Simulation launch failed while " + phase + ": " + detail
+					+ " Check the application log for details.");
+			LOGGER.log(Level.SEVERE, "Simulation launch failed while " + phase, exception);
+			appShell.showPage(AppShell.Page.SETTINGS, setupView);
+		} finally {
+			launchButton.setDisable(false);
 		}
+	}
+
+	private void rollbackFailedLaunch() {
+		for (PauseTransition transition : arrivalTransitions) {
+			transition.stop();
+		}
+		arrivalTransitions.clear();
+		if (parking != null) {
+			parking.shutdown();
+			parking = null;
+		}
+		for (Voiture car : carThreads) {
+			car.interrupt();
+		}
+		carThreads.clear();
+		simulationLaunched = false;
+		simulationState = SimulationState.IDLE;
+		refreshDashboardStateIndicators();
+		refreshSimulationMonitor();
+	}
+
+	private void prepareLiveDashboard() {
+		detachPredictionsAnalytics();
 		parkingLotsPage = null;
+		parkingLotsGridPanel = null;
 		parkingLotsContentRow = null;
 		spaceDetailsPanel = null;
 		selectedSpaceNumber = -1;
@@ -764,12 +1384,11 @@ public class Main extends Application implements ParkingListener {
 		dashboardBody.getStyleClass().add("dashboard-body");
 		dashboardBody.setTop(createHeader());
 		dashboardCenter = createMainContent();
-		dashboardBody.setCenter(dashboardCenter);
+		dashboardWorkspaceScroll = new ScrollPane(dashboardCenter);
+		dashboardWorkspaceScroll.setFitToWidth(true);
+		dashboardWorkspaceScroll.getStyleClass().add("dashboard-scroll");
+		dashboardBody.setCenter(dashboardWorkspaceScroll);
 		dashboardBody.setBottom(createActivityPanel());
-		simulationLaunched = true;
-		appShell.showPage(AppShell.Page.DASHBOARD, dashboardBody);
-		attachDashboardPanels();
-		startSimulation();
 	}
 
 	private VBox createHeader() {
@@ -783,6 +1402,7 @@ public class Main extends Application implements ParkingListener {
 
 		Button analyticsButton = new Button("View analytics");
 		analyticsButton.getStyleClass().add("secondary-button");
+		analyticsButton.setText(analyticsExpandedOnDashboard ? "Hide insights" : "Show insights");
 		analyticsButton.setOnAction(event -> toggleAnalytics(analyticsButton));
 
 		Button resetButton = new Button("Restart");
@@ -790,21 +1410,98 @@ public class Main extends Application implements ParkingListener {
 		resetButton.setOnAction(event -> restartSimulation());
 
 		HBox actions = new HBox(10, spawnButton, configButton, analyticsButton, resetButton);
-		actions.setMaxWidth(Double.MAX_VALUE);
 		actions.setAlignment(Pos.CENTER_RIGHT);
 
+		Label eyebrow = new Label("PARKWISE · SMART CITY PARKING");
+		eyebrow.getStyleClass().add("dashboard-eyebrow");
+		Label title = new Label("Your parking, at a glance");
+		title.getStyleClass().add("dashboard-welcome-title");
+		Label subtitle = new Label("Live spaces, reservations, and demand insights for your parking lot.");
+		subtitle.getStyleClass().add("dashboard-welcome-copy");
+		VBox introduction = new VBox(6, eyebrow, title, subtitle);
+
+		dashboardRunStateValue = new Label();
+		dashboardRunStateValue.getStyleClass().add("dashboard-state-pill");
+		Label strategyLabel = new Label("SYNC");
+		strategyLabel.getStyleClass().add("dashboard-strategy-label");
+		if (!strategyValue.getStyleClass().contains("dashboard-strategy-value")) {
+			strategyValue.getStyleClass().add("dashboard-strategy-value");
+		}
+		HBox strategyBadge = new HBox(7, strategyLabel, strategyValue);
+		strategyBadge.getStyleClass().add("dashboard-strategy-badge");
+		strategyBadge.setAlignment(Pos.CENTER);
+		HBox statusBadges = new HBox(8, dashboardRunStateValue, strategyBadge);
+		statusBadges.setAlignment(Pos.CENTER_RIGHT);
+		VBox headerActions = new VBox(12, statusBadges, actions);
+		headerActions.setAlignment(Pos.CENTER_RIGHT);
+		Region spacer = new Region();
+		HBox.setHgrow(spacer, Priority.ALWAYS);
+		HBox welcome = new HBox(20, introduction, spacer, headerActions);
+		welcome.setAlignment(Pos.CENTER_LEFT);
+		welcome.setMaxWidth(Double.MAX_VALUE);
+		welcome.getStyleClass().add("dashboard-welcome");
+
 		HBox metrics = new HBox(12,
-				createMetricCard("SYNC STRATEGY", strategyValue, "Concurrency control"),
-				createMetricCard("TOTAL SLOTS", totalSlotsValue, "Parking capacity"),
-				createMetricCard("OCCUPIED", occupiedValue, "Currently parked"),
-				createMetricCard("AVAILABLE", availableValue, "Ready to use"),
-				createMetricCard("RESERVED", reservedValue, "Unoccupied with future bookings"),
-				createMetricCard("WAITING", waitingValue, "Cars in queue"),
-				createMetricCard("AVG. QUEUE WAIT", averageWaitValue, "Completed parking visits"));
-		metrics.getStyleClass().add("metrics-row");
-		VBox top = new VBox(18, actions, metrics);
-		top.setPadding(new Insets(0, 0, 20, 0));
+				dashboardMetricCard("TOTAL CAPACITY", totalSlotsValue, "Spaces in this car park", "▦", "blue"),
+				dashboardMetricCard("OCCUPIED", occupiedValue, "In use right now", "↗", "red"),
+				dashboardMetricCard("AVAILABLE", availableValue, "Ready for vehicles", "✓", "green"),
+				dashboardMetricCard("RESERVATIONS", reservedValue, "Unoccupied with future bookings", "◷", "amber"));
+		metrics.getStyleClass().addAll("metrics-row", "dashboard-kpis");
+		VBox top = new VBox(12, welcome, metrics);
+		top.setPadding(new Insets(0, 0, 14, 0));
+		refreshDashboardStateIndicators();
 		return top;
+	}
+
+	private VBox dashboardMetricCard(String title, Label value, String caption, String icon, String tone) {
+		Label iconLabel = new Label(icon);
+		iconLabel.getStyleClass().addAll("dashboard-kpi-icon", "dashboard-kpi-icon-" + tone);
+		Label titleLabel = new Label(title);
+		titleLabel.getStyleClass().add("metric-title");
+		Label captionLabel = new Label(caption);
+		captionLabel.getStyleClass().add("metric-caption");
+		captionLabel.setWrapText(true);
+		VBox text = new VBox(4, titleLabel, value, captionLabel);
+		HBox.setHgrow(text, Priority.ALWAYS);
+		HBox content = new HBox(12, iconLabel, text);
+		content.setAlignment(Pos.CENTER_LEFT);
+		VBox card = new VBox(content);
+		card.getStyleClass().addAll("metric-card", "dashboard-kpi-card");
+		card.setAlignment(Pos.CENTER_LEFT);
+		HBox.setHgrow(card, Priority.ALWAYS);
+		card.setMinWidth(150);
+		return card;
+	}
+
+	private void refreshDashboardStateIndicators() {
+		if (dashboardRunStateValue != null) {
+			dashboardRunStateValue.setText(switch (simulationState) {
+				case IDLE -> "IDLE";
+				case RUNNING -> "SIMULATION LIVE";
+				case STOPPED -> "STOPPED";
+			});
+			dashboardRunStateValue.getStyleClass().removeAll("dashboard-state-idle", "dashboard-state-running",
+					"dashboard-state-stopped");
+			dashboardRunStateValue.getStyleClass().add(switch (simulationState) {
+				case IDLE -> "dashboard-state-idle";
+				case RUNNING -> "dashboard-state-running";
+				case STOPPED -> "dashboard-state-stopped";
+			});
+		}
+		if (dashboardActivityStateValue != null) {
+			dashboardActivityStateValue.setText(switch (simulationState) {
+				case IDLE -> "READY";
+				case RUNNING -> "LIVE";
+				case STOPPED -> "PAUSED";
+			});
+			dashboardActivityStateValue.getStyleClass().removeAll("activity-state-idle", "activity-state-running",
+					"activity-state-stopped");
+			dashboardActivityStateValue.getStyleClass().add(switch (simulationState) {
+				case IDLE -> "activity-state-idle";
+				case RUNNING -> "activity-state-running";
+				case STOPPED -> "activity-state-stopped";
+			});
+		}
 	}
 
 	private VBox createMetricCard(String title, Label value, String caption) {
@@ -821,20 +1518,33 @@ public class Main extends Application implements ParkingListener {
 	}
 
 	private HBox createMainContent() {
-		Label lotTitle = new Label("Parking lot");
+		Label lotTitle = new Label("Live parking occupancy");
 		lotTitle.getStyleClass().add("section-title");
-		Label lotSubtitle = new Label("Live occupancy · Green = available · Red = occupied");
+		Label lotSubtitle = new Label("Space states and vehicle IDs update from the running simulation.");
 		lotSubtitle.getStyleClass().add("section-caption");
 		HBox legend = new HBox(8, legendDot("available-dot"), new Label("Available"),
 				legendDot("occupied-dot"), new Label("Occupied"), legendDot("reserved-dot"), new Label("Reserved"));
 		legend.getStyleClass().add("legend");
 		legend.setAlignment(Pos.CENTER_LEFT);
 
-		GridPane parkingGrid = createParkingGrid();
-		ScrollPane lotScroll = new ScrollPane(parkingGrid);
-		lotScroll.setFitToWidth(true);
-		lotScroll.setFitToHeight(true);
-		lotScroll.getStyleClass().add("lot-scroll");
+		dashboardOccupancySummary = new Label("0 of 0 occupied");
+		dashboardOccupancySummary.getStyleClass().add("occupancy-summary-value");
+		Label utilizationLabel = new Label("LOT UTILIZATION");
+		utilizationLabel.getStyleClass().add("metric-title");
+		dashboardOccupancyProgress = new ProgressBar(0);
+		dashboardOccupancyProgress.setMaxWidth(Double.MAX_VALUE);
+		dashboardOccupancyProgress.getStyleClass().add("dashboard-occupancy-progress");
+		HBox utilizationHeader = new HBox(10, utilizationLabel, new Region(), dashboardOccupancySummary);
+		HBox.setHgrow(utilizationHeader.getChildren().get(1), Priority.ALWAYS);
+		utilizationHeader.setAlignment(Pos.CENTER_LEFT);
+		VBox utilization = new VBox(7, utilizationHeader, dashboardOccupancyProgress);
+		utilization.getStyleClass().add("dashboard-utilization");
+		HBox queueStats = new HBox(24,
+				dashboardInlineStat("VEHICLES WAITING", waitingValue),
+				dashboardInlineStat("AVERAGE QUEUE WAIT", averageWaitValue));
+		queueStats.getStyleClass().add("dashboard-queue-stats");
+
+		TilePane parkingGrid = createParkingGrid();
 		spaceFilter = new ComboBox<>(FXCollections.observableArrayList(
 				"All spaces", "Available", "Occupied", "Reserved"));
 		spaceFilter.setValue("All spaces");
@@ -842,16 +1552,17 @@ public class Main extends Application implements ParkingListener {
 		spaceFilter.setOnAction(event -> applySpaceFilter(currentSpaceStates()));
 		HBox filterRow = new HBox(8, new Label("Filter:"), spaceFilter);
 		filterRow.setAlignment(Pos.CENTER_LEFT);
-		HBox legendAndFilter = new HBox(12, legend, new Region(), filterRow);
+		parkingGridLegendAndFilter = new HBox(12, legend, new Region(), filterRow);
 		HBox.setHgrow(legend, Priority.ALWAYS);
-		HBox.setHgrow(legendAndFilter.getChildren().get(1), Priority.ALWAYS);
-		legendAndFilter.setAlignment(Pos.CENTER_LEFT);
+		HBox.setHgrow(parkingGridLegendAndFilter.getChildren().get(1), Priority.ALWAYS);
+		parkingGridLegendAndFilter.setAlignment(Pos.CENTER_LEFT);
 
-		parkingLotPanel = new VBox(14, lotTitle, lotSubtitle, legendAndFilter, lotScroll);
-		parkingLotPanel.getStyleClass().add("panel");
-		parkingLotPanel.setMinWidth(500);
+		parkingLotPanel = new VBox(13, lotTitle, lotSubtitle, utilization, queueStats,
+				parkingGridLegendAndFilter, parkingGrid);
+		parkingLotPanel.getStyleClass().addAll("panel", "dashboard-occupancy-card");
+		parkingLotPanel.setMinWidth(0);
+		parkingLotPanel.setMaxHeight(Region.USE_PREF_SIZE);
 		HBox.setHgrow(parkingLotPanel, Priority.ALWAYS);
-		VBox.setVgrow(lotScroll, Priority.ALWAYS);
 
 		dashboardCenter = new HBox(18, parkingLotPanel, analyticsPanel);
 		dashboardCenter.setAlignment(Pos.TOP_LEFT);
@@ -859,49 +1570,33 @@ public class Main extends Application implements ParkingListener {
 		return dashboardCenter;
 	}
 
-	private GridPane createParkingGrid() {
-		int columns = (int) Math.ceil(Math.sqrt(nbrPlaces));
-		int rows = (int) Math.ceil((double) nbrPlaces / columns);
-		int split = columns > 1 ? (columns + 1) / 2 : columns;
-		GridPane grid = new GridPane();
+	private VBox dashboardInlineStat(String title, Label value) {
+		Label titleLabel = new Label(title);
+		titleLabel.getStyleClass().add("metric-title");
+		if (!value.getStyleClass().contains("dashboard-inline-value")) {
+			value.getStyleClass().add("dashboard-inline-value");
+		}
+		return new VBox(3, titleLabel, value);
+	}
+
+	private TilePane createParkingGrid() {
+		TilePane grid = new TilePane();
 		parkingGrid = grid;
 		slotTiles.clear();
-		grid.setAlignment(Pos.CENTER);
+		grid.setAlignment(Pos.CENTER_LEFT);
+		grid.setPrefTileWidth(122);
+		grid.setPrefTileHeight(104);
 		grid.setHgap(12);
 		grid.setVgap(14);
 		grid.setPadding(new Insets(18));
 		slots = new CustomRectangle[nbrPlaces];
 
-		for (int row = 0; row < rows; row++) {
-			for (int col = 0; col < columns; col++) {
-				int index = row * columns + col;
-				if (index >= nbrPlaces) {
-					continue;
-				}
-				int visualCol = columns > 1 && col >= split ? col + 1 : col;
-				CustomRectangle slot = new CustomRectangle(index + 1);
-				slot.setSelectionHandler(this::selectSpace);
-				slots[index] = slot;
-				slotTiles.put(index + 1, slot);
-				grid.add(slot, visualCol, row);
-			}
-			if (columns > 1) {
-				StackPane lane = new StackPane(new Label("↕"));
-				lane.getStyleClass().add("lane-divider");
-				lane.setMinHeight(102);
-				lane.setPrefWidth(34);
-				grid.add(lane, split, row);
-			}
-		}
-		for (int col = 0; col < columns + (columns > 1 ? 1 : 0); col++) {
-			ColumnConstraints constraints = new ColumnConstraints();
-			constraints.setHgrow(Priority.ALWAYS);
-			if (columns > 1 && col == split) {
-				constraints.setHgrow(Priority.NEVER);
-				constraints.setMinWidth(34);
-				constraints.setPrefWidth(34);
-			}
-			grid.getColumnConstraints().add(constraints);
+		for (int index = 0; index < nbrPlaces; index++) {
+			CustomRectangle slot = new CustomRectangle(index + 1);
+			slot.setSelectionHandler(this::selectSpace);
+			slots[index] = slot;
+			slotTiles.put(index + 1, slot);
+			grid.getChildren().add(slot);
 		}
 		applySpaceFilter(currentSpaceStates());
 		return grid;
@@ -912,7 +1607,7 @@ public class Main extends Application implements ParkingListener {
 	}
 
 	private Parking.SpaceSnapshot currentSpaceSnapshot() {
-		if (parking != null && simulationLaunched && parking.isActive() && parking.capacity() == nbrPlaces) {
+		if (parking != null && simulationLaunched && parking.capacity() == nbrPlaces) {
 			return parking.spaceSnapshot();
 		}
 		return Parking.plannedSpaceSnapshot(nbrPlaces, reservationManager.all());
@@ -970,13 +1665,23 @@ public class Main extends Application implements ParkingListener {
 		availableValue.setText(String.valueOf(available));
 		reservedValue.setText(String.valueOf(reserved));
 		waitingValue.setText(String.valueOf(snapshot.waitingCount()));
-		if (lotTotalValue != null) lotTotalValue.setText(String.valueOf(states.size()));
+		if (dashboardOccupancySummary != null) {
+			dashboardOccupancySummary.setText(occupied + " of " + snapshot.totalCount() + " occupied");
+		}
+		if (dashboardOccupancyProgress != null) {
+			dashboardOccupancyProgress.setProgress(snapshot.totalCount() == 0
+					? 0 : (double) occupied / snapshot.totalCount());
+		}
+		if (lotTotalValue != null) lotTotalValue.setText(String.valueOf(snapshot.totalCount()));
 		if (lotAvailableValue != null) lotAvailableValue.setText(String.valueOf(available));
 		if (lotOccupiedValue != null) lotOccupiedValue.setText(String.valueOf(occupied));
 		if (lotReservedValue != null) lotReservedValue.setText(String.valueOf(reserved));
 		updateOccupancyChart(available, occupied, reserved);
 		applySpaceFilter(states);
 		refreshSelectedSpaceDetails(states);
+		refreshDashboardStateIndicators();
+		refreshSimulationMonitor();
+		refreshPredictionSummary();
 	}
 
 	private void selectSpace(int slotNumber) {
@@ -1035,19 +1740,22 @@ public class Main extends Application implements ParkingListener {
 		forecastTitle.getStyleClass().add("chart-title");
 		Label forecastCaption = new Label("Forecast includes booked vehicles and scheduled arrivals; manual spawns are excluded.");
 		forecastCaption.getStyleClass().add("section-caption");
+		forecastCaption.setWrapText(true);
 		NumberAxis forecastXAxis = new NumberAxis();
-		forecastXAxis.setLabel("Seconds from start");
+		forecastXAxis.setLabel("Time from start (seconds)");
 		NumberAxis forecastYAxis = new NumberAxis();
 		forecastYAxis.setLabel("Occupied spaces");
 		forecastYAxis.setForceZeroInRange(true);
-		LineChart<Number, Number> forecastChart = new LineChart<>(forecastXAxis, forecastYAxis);
+		forecastChart = new LineChart<>(forecastXAxis, forecastYAxis);
 		forecastChart.setAnimated(false);
 		forecastChart.setCreateSymbols(false);
 		forecastChart.setPrefHeight(245);
+		forecastChart.setLegendVisible(true);
+		forecastChart.getStyleClass().add("forecast-chart");
 		forecastOccupancySeries = new XYChart.Series<>();
-		forecastOccupancySeries.setName("Forecast");
+		forecastOccupancySeries.setName("Predicted occupancy");
 		actualOccupancySeries = new XYChart.Series<>();
-		actualOccupancySeries.setName("Actual");
+		actualOccupancySeries.setName("Actual occupancy");
 		forecastChart.getData().add(forecastOccupancySeries);
 		forecastChart.getData().add(actualOccupancySeries);
 
@@ -1070,16 +1778,93 @@ public class Main extends Application implements ParkingListener {
 
 		analyticsContent.getStyleClass().add("panel");
 		analyticsPanel.setMinWidth(300);
-		analyticsPanel.setPrefWidth(340);
-		analyticsPanel.setFitToWidth(true);
-		analyticsPanel.setPannable(true);
-		analyticsPanel.getStyleClass().add("analytics-scroll");
-		analyticsPanel.setContent(analyticsContent);
-		analyticsPanel.setVisible(false);
-		analyticsPanel.setManaged(false);
-		analyticsContent.getChildren().clear();
+		analyticsPanel.setPrefWidth(380);
+		analyticsPanel.setMaxWidth(440);
+		analyticsPanel.getStyleClass().add("dashboard-analytics-column");
+		analyticsPanel.setVisible(true);
+		analyticsPanel.setManaged(true);
+		analyticsPanel.getChildren().setAll(analyticsContent);
+		analyticsContent.setMaxWidth(Double.MAX_VALUE);
 		analyticsContent.getChildren().addAll(analyticsTitle, occupancyTitle, occupancyChart,
 				forecastTitle, forecastCaption, forecastChart, cityPredictionPanel, waitTitle, waitChart);
+	}
+
+	private void ensurePredictionsPage() {
+		if (predictionsPageContent == null) {
+			predictionCurrentOccupancyValue = metricValue("—");
+			predictionPeakOccupancyValue = metricValue("—");
+			predictionAvailableAtPeakValue = metricValue("—");
+			HBox summary = new HBox(12,
+					createMetricCard("CURRENT OCCUPANCY", predictionCurrentOccupancyValue, "Occupied / lot capacity"),
+					createMetricCard("PREDICTED PEAK", predictionPeakOccupancyValue, "Forecast occupancy / capacity"),
+					createMetricCard("AVAILABLE AT PEAK", predictionAvailableAtPeakValue, "Spaces free at forecast peak"));
+			summary.getStyleClass().add("metrics-row");
+			predictionCurrentCaption = new Label();
+			predictionCurrentCaption.getStyleClass().add("section-caption");
+			predictionCurrentCaption.setWrapText(true);
+			predictionPeakHorizonCaption = new Label();
+			predictionPeakHorizonCaption.getStyleClass().add("section-caption");
+			predictionPeakHorizonCaption.setWrapText(true);
+			VBox pageIntro = new VBox(5,
+					new Label("Simulation occupancy outlook"),
+					new Label("Compare live space use with the scheduled-arrival forecast and historical Birmingham demand."));
+			pageIntro.getChildren().get(0).getStyleClass().add("section-title");
+			pageIntro.getChildren().get(1).getStyleClass().add("section-caption");
+			((Label) pageIntro.getChildren().get(1)).setWrapText(true);
+			predictionsPageContent = new VBox(14, pageIntro, summary,
+					predictionCurrentCaption, predictionPeakHorizonCaption);
+			predictionsPageContent.getStyleClass().add("predictions-page-content");
+			predictionsPageContent.setMaxWidth(Double.MAX_VALUE);
+		}
+		if (!predictionsPageContent.getChildren().contains(analyticsPanel)) {
+			predictionsPageContent.getChildren().add(analyticsPanel);
+		}
+	}
+
+	private void refreshPredictionSummary() {
+		if (predictionCurrentOccupancyValue == null) {
+			return;
+		}
+		if (parking == null) {
+			predictionCurrentOccupancyValue.setText("—");
+			predictionCurrentCaption.setText("No live simulation occupancy is available.");
+		} else {
+			Parking.SpaceSnapshot snapshot = currentSpaceSnapshot();
+			predictionCurrentOccupancyValue.setText(snapshot.occupiedCount() + " / " + snapshot.totalCount());
+			predictionCurrentCaption.setText("Live snapshot · " + snapshot.occupiedCount()
+					+ " of " + snapshot.totalCount() + " spaces occupied.");
+		}
+
+		if (forecastOccupancySeries == null || forecastOccupancySeries.getData().isEmpty() || parking == null) {
+			predictionPeakOccupancyValue.setText("—");
+			predictionAvailableAtPeakValue.setText("—");
+			predictionPeakHorizonCaption.setText("A simulation forecast will appear here after a run starts.");
+			return;
+		}
+		XYChart.Data<Number, Number> peak = forecastOccupancySeries.getData().stream()
+				.max(java.util.Comparator.comparingDouble(point -> point.getYValue().doubleValue()))
+				.orElse(null);
+		if (peak == null) {
+			predictionPeakOccupancyValue.setText("—");
+			predictionAvailableAtPeakValue.setText("—");
+			predictionPeakHorizonCaption.setText("A simulation forecast is not available.");
+			return;
+		}
+		int capacity = currentSpaceSnapshot().totalCount();
+		int predictedOccupied = (int) Math.round(peak.getYValue().doubleValue());
+		predictionPeakOccupancyValue.setText(predictedOccupied + " / " + capacity);
+		predictionAvailableAtPeakValue.setText(String.valueOf(capacity - predictedOccupied));
+		predictionPeakHorizonCaption.setText(String.format(Locale.ROOT,
+				"Peak forecast occurs at +%.1f sec from simulation start. Forecasts include scheduled vehicles; manual spawns are not predicted.",
+				peak.getXValue().doubleValue()));
+	}
+
+	private void setPredictionsAnalyticsLayout(boolean predictionsPage) {
+		analyticsPanel.setMinWidth(predictionsPage ? 0 : 300);
+		analyticsPanel.setPrefWidth(predictionsPage ? 900 : 380);
+		analyticsPanel.setMaxWidth(predictionsPage ? Double.MAX_VALUE : 440);
+		occupancyChart.setPrefHeight(predictionsPage ? 280 : 210);
+		forecastChart.setPrefHeight(predictionsPage ? 400 : 245);
 	}
 
 	private VBox createHistoricalPredictionPanel() {
@@ -1088,6 +1873,14 @@ public class Main extends Application implements ParkingListener {
 		Label description = new Label("Typical Birmingham occupancy by car park, weekday, and half-hour.");
 		description.getStyleClass().add("section-caption");
 		description.setWrapText(true);
+		if (historicalOccupancyPredictor == null) {
+			Label unavailable = new Label(historicalDataUnavailableMessage);
+			unavailable.getStyleClass().add("prediction-unavailable");
+			unavailable.setWrapText(true);
+			VBox unavailablePanel = new VBox(8, title, description, unavailable);
+			unavailablePanel.getStyleClass().addAll("metric-card", "historical-prediction-panel");
+			return unavailablePanel;
+		}
 
 		historicalCarParkSelector = new ComboBox<>();
 		historicalCarParkSelector.getItems().setAll(historicalOccupancyPredictor.carParkIds());
@@ -1139,6 +1932,9 @@ public class Main extends Application implements ParkingListener {
 		Label dataNote = new Label("Historical benchmark only; this is not a live city sensor feed.");
 		dataNote.getStyleClass().add("section-caption");
 		dataNote.setWrapText(true);
+		Label modelExplanation = new Label("Expected occupied and available are rounded counts from the selected occupancy profile. Held-out MAE compares the weekday/time profile with the car-park average; lower is closer to held-out observations.");
+		modelExplanation.getStyleClass().add("prediction-model-explanation");
+		modelExplanation.setWrapText(true);
 		historicalModelScoreLabel = new Label();
 		historicalModelScoreLabel.getStyleClass().add("section-caption");
 		historicalModelScoreLabel.setWrapText(true);
@@ -1150,8 +1946,8 @@ public class Main extends Application implements ParkingListener {
 				new Label("Birmingham car park"), historicalCarParkSelector,
 				new Label("Target weekday"), historicalDaySelector,
 				new Label("Target time"), historicalTimeSelector,
-				historicalPredictionLabel, historicalModelScoreLabel, dataNote);
-		panel.getStyleClass().add("metric-card");
+				historicalPredictionLabel, modelExplanation, historicalModelScoreLabel, dataNote);
+		panel.getStyleClass().addAll("metric-card", "historical-prediction-panel");
 		refreshHistoricalPrediction();
 		return panel;
 	}
@@ -1188,20 +1984,22 @@ public class Main extends Application implements ParkingListener {
 	}
 
 	private VBox createActivityPanel() {
-		Label title = new Label("Live activity");
+		Label title = new Label("Recent activity");
 		title.getStyleClass().add("section-title");
-		Label live = new Label("LIVE");
-		live.getStyleClass().add("live-pill");
-		HBox titleRow = new HBox(10, title, live);
+		dashboardActivityStateValue = new Label();
+		dashboardActivityStateValue.getStyleClass().add("dashboard-activity-state");
+		HBox titleRow = new HBox(10, title, new Region(), dashboardActivityStateValue);
+		HBox.setHgrow(titleRow.getChildren().get(1), Priority.ALWAYS);
 		titleRow.setAlignment(Pos.CENTER_LEFT);
-		activityLog.getStyleClass().add("activity-log");
-		activityLog.setPlaceholder(new Label("Simulation events will appear here."));
-		activityLog.setFocusTraversable(false);
-		activityLog.setPrefHeight(125);
-		VBox panel = new VBox(10, titleRow, activityLog);
-		panel.getStyleClass().add("activity-panel");
-		panel.setPadding(new Insets(16, 0, 0, 0));
+		dashboardActivityEntries = new VBox(6);
+		dashboardActivityEntries.getStyleClass().add("dashboard-activity-entries");
+		dashboardActivityEntries.setMinHeight(112);
+		dashboardActivityEntries.setPrefHeight(138);
+		refreshDashboardActivityEntries();
+		VBox panel = new VBox(10, titleRow, dashboardActivityEntries);
+		panel.getStyleClass().addAll("panel", "dashboard-activity-panel");
 		BorderPane.setMargin(panel, new Insets(0));
+		refreshDashboardStateIndicators();
 		return panel;
 	}
 
@@ -1216,10 +2014,19 @@ public class Main extends Application implements ParkingListener {
 		analyticsExpandedOnDashboard = show;
 		analyticsPanel.setVisible(show);
 		analyticsPanel.setManaged(show);
-		button.setText(show ? "Hide analytics" : "View analytics");
+		button.setText(show ? "Hide insights" : "Show insights");
 	}
 
 	private void startSimulation() {
+		if (simulationState == SimulationState.RUNNING) {
+			return;
+		}
+		long runStartedNanos = System.nanoTime();
+		PreparedSimulation prepared = prepareSimulation(nbrPlaces, numCars, syncStrategy,
+				arrivalWindowSeconds, parkingDurationSeconds, simulationSeed, reservationManager.all(), this,
+				runStartedNanos);
+		long runParkingDurationMillis = parkingDurationSeconds * 1000L;
+
 		if (waitSeries != null) {
 			waitSeries.getData().clear();
 		}
@@ -1230,57 +2037,100 @@ public class Main extends Application implements ParkingListener {
 			actualOccupancySeries.getData().clear();
 			actualOccupancySeries.getData().add(new XYChart.Data<>(0, 0));
 		}
-		activityLog.getItems().clear();
+		activityEntries.clear();
 		strategyValue.setText(syncStrategy == 1 ? "SEMAPHORE" : "MUTEX");
 		waitingValue.setText("0");
 		averageWaitValue.setText("0.00 s");
+		completedVehicleExits = 0;
+		averageQueueWaitMillis = 0;
+		lastReportedWaitingCount = 0;
+		elapsedAtStopMillis = 0;
 
-		simulationStartedNanos = System.nanoTime();
-		List<Integer> arrivalDelays = ArrivalSchedule.generateDelaysMillis(numCars, arrivalWindowSeconds, simulationSeed);
-		List<Reservation> activeReservations = reservationManager.all();
+		simulationStartedNanos = runStartedNanos;
 		if (forecastOccupancySeries != null) {
-			List<OccupancyForecast.Point> forecast = OccupancyForecast.predict(
-					arrivalDelays, parkingDurationSeconds * 1000, nbrPlaces, activeReservations);
-			for (OccupancyForecast.Point point : forecast) {
+			for (OccupancyForecast.Point point : prepared.forecast()) {
 				forecastOccupancySeries.getData().add(new XYChart.Data<>(point.timeMillis() / 1000.0, point.occupied()));
 			}
 		}
 
-		parking = new Parking(nbrPlaces, new DefaultStrategy(), this, syncStrategy,
-				activeReservations, simulationStartedNanos);
+		parking = prepared.parking();
+		simulationLaunched = true;
+		simulationState = SimulationState.RUNNING;
+		Parking currentRun = parking;
 		refreshParkingLotState();
-		logEvent(parking, "Simulation started · " + numCars + " cars · " + nbrPlaces + " slots · "
-				+ activeReservations.size() + " reservations · seed " + simulationSeed);
+		refreshDashboardStateIndicators();
+		refreshSimulationMonitor();
+		logEvent(currentRun, "Simulation started · " + numCars + " cars · " + nbrPlaces + " slots · "
+				+ reservationManager.all().size() + " reservations · seed " + simulationSeed);
 
 		spawnedCarCount = numCars;
 		for (int index = 0; index < numCars; index++) {
 			int carNumber = index + 1;
-			PauseTransition arrival = new PauseTransition(Duration.millis(arrivalDelays.get(index)));
+			PauseTransition arrival = new PauseTransition(Duration.millis(prepared.arrivalDelays().get(index)));
 			arrival.setOnFinished(event -> {
-				Voiture car = new Voiture("Car " + carNumber, parking, parkingDurationSeconds * 1000L);
+				String vehicleId = "Car " + carNumber;
+				logEvent(currentRun, vehicleId + " arrived and is attempting to park.");
+				Voiture car = new Voiture(vehicleId, currentRun, runParkingDurationMillis);
 				carThreads.add(car);
 				car.start();
 			});
 			arrivalTransitions.add(arrival);
 			arrival.play();
 		}
-		for (Reservation reservation : activeReservations) {
+		for (Reservation reservation : reservationManager.all()) {
 			PauseTransition arrival = new PauseTransition(Duration.seconds(reservation.startOffsetSeconds()));
 			arrival.setOnFinished(event -> {
-				Voiture reservedCar = new Voiture(reservation.vehicleId(), parking,
+				logEvent(currentRun, "Reserved vehicle " + reservation.vehicleId() + " arrived for Space "
+						+ reservation.slotNumber() + ".");
+				Voiture reservedCar = new Voiture(reservation.vehicleId(), currentRun,
 						reservation.durationSeconds() * 1000L, reservation);
 				carThreads.add(reservedCar);
 				reservedCar.start();
-				logEvent(parking, "Reserved vehicle " + reservation.vehicleId() + " arrived for Space "
-						+ reservation.slotNumber() + ".");
 			});
 			arrivalTransitions.add(arrival);
 			arrival.play();
 		}
 	}
 
+	static PreparedSimulation prepareSimulation(int capacity, int vehicleCount, int syncStrategy,
+			int arrivalWindowSeconds, int parkingDurationSeconds, int seed, List<Reservation> reservations,
+			ParkingListener listener, long startedNanos) {
+		if (syncStrategy != 1 && syncStrategy != 2) {
+			throw new IllegalArgumentException("Synchronization strategy must be Semaphore (1) or Mutex (2)");
+		}
+		List<Integer> arrivalDelays;
+		try {
+			arrivalDelays = ArrivalSchedule.generateDelaysMillis(vehicleCount, arrivalWindowSeconds, seed);
+		} catch (RuntimeException exception) {
+			throw new IllegalArgumentException("Arrival schedule initialization failed: " + exception.getMessage(), exception);
+		}
+		List<OccupancyForecast.Point> forecast;
+		try {
+			forecast = OccupancyForecast.predict(arrivalDelays,
+					parkingDurationSeconds * 1000, capacity, reservations);
+		} catch (RuntimeException exception) {
+			throw new IllegalArgumentException("Forecast initialization failed: " + exception.getMessage(), exception);
+		}
+		Parking parking;
+		try {
+			parking = new Parking(capacity, new DefaultStrategy(), listener, syncStrategy,
+					reservations, startedNanos);
+		} catch (RuntimeException exception) {
+			throw new IllegalArgumentException("Parking initialization failed: " + exception.getMessage(), exception);
+		}
+		return new PreparedSimulation(parking, arrivalDelays, forecast);
+	}
+
+	record PreparedSimulation(Parking parking, List<Integer> arrivalDelays,
+			List<OccupancyForecast.Point> forecast) {
+		PreparedSimulation {
+			arrivalDelays = List.copyOf(arrivalDelays);
+			forecast = List.copyOf(forecast);
+		}
+	}
+
 	private void spawnVehicleOnTheFly() {
-		if (parking == null) return;
+		if (parking == null || simulationState != SimulationState.RUNNING) return;
 		spawnedCarCount++;
 		Voiture extraCar = new Voiture("Car " + spawnedCarCount + " (Extra)", parking, parkingDurationSeconds * 1000L);
 		carThreads.add(extraCar);
@@ -1290,10 +2140,24 @@ public class Main extends Application implements ParkingListener {
 
 	private void restartSimulation() {
 		stopSimulation();
-		startSimulation();
+		try {
+			startSimulation();
+		} catch (RuntimeException exception) {
+			rollbackFailedLaunch();
+			showSimulationStartError(exception);
+		}
 	}
 
 	private void stopSimulation() {
+		if (simulationState == SimulationState.RUNNING) {
+			elapsedAtStopMillis = java.util.concurrent.TimeUnit.NANOSECONDS
+					.toMillis(System.nanoTime() - simulationStartedNanos);
+			simulationState = SimulationState.STOPPED;
+			logEventOnFxThread("Simulation stopped; active vehicle threads are shutting down.");
+		}
+		if (monitorElapsedTimeline != null) {
+			monitorElapsedTimeline.stop();
+		}
 		for (PauseTransition transition : arrivalTransitions) {
 			transition.stop();
 		}
@@ -1311,6 +2175,8 @@ public class Main extends Application implements ParkingListener {
 		}
 		carThreads.clear();
 		arrivalTransitions.clear();
+		refreshDashboardStateIndicators();
+		refreshSimulationMonitor();
 	}
 
 	private void joinStoppingCars(List<Voiture> stoppingCars) {
@@ -1334,7 +2200,8 @@ public class Main extends Application implements ParkingListener {
 	@Override
 	public void carParked(Parking source, int place, String carName, int occupied, int waiting, long waitMillis) {
 		runOnFxThread(() -> {
-			if (source != parking || slots == null || place < 0 || place >= slots.length) return;
+			if (source != parking || simulationState != SimulationState.RUNNING
+					|| slots == null || place < 0 || place >= slots.length) return;
 			updateMetrics(averageWaitValue.getText());
 			recordActualOccupancy(occupied);
 			logEventOnFxThread(carName + " parked in Slot " + (place + 1) + " · waited " + formatDuration(waitMillis));
@@ -1344,8 +2211,11 @@ public class Main extends Application implements ParkingListener {
 	@Override
 	public void carLeft(Parking source, int place, String carName, int occupied, int waiting, double averageWaitMillis, int exits) {
 		runOnFxThread(() -> {
-			if (source != parking || slots == null || place < 0 || place >= slots.length) return;
+			if (source != parking || simulationState != SimulationState.RUNNING
+					|| slots == null || place < 0 || place >= slots.length) return;
 			String average = String.format("%.2f s", averageWaitMillis / 1000.0);
+			completedVehicleExits = exits;
+			this.averageQueueWaitMillis = averageWaitMillis;
 			updateMetrics(average);
 			recordActualOccupancy(occupied);
 			if (waitSeries != null) {
@@ -1361,7 +2231,11 @@ public class Main extends Application implements ParkingListener {
 	@Override
 	public void parkingMetrics(Parking source, int occupied, int waiting) {
 		runOnFxThread(() -> {
-			if (source == parking) {
+			if (source == parking && simulationState == SimulationState.RUNNING) {
+				if (waiting != lastReportedWaitingCount) {
+					logEventOnFxThread("Waiting vehicles: " + waiting + ".");
+					lastReportedWaitingCount = waiting;
+				}
 				updateMetrics(averageWaitValue.getText());
 			}
 		});
@@ -1388,17 +2262,36 @@ public class Main extends Application implements ParkingListener {
 
 	private void logEvent(Parking source, String message) {
 		runOnFxThread(() -> {
-			if (source == parking) {
+			if (source == parking && simulationState == SimulationState.RUNNING) {
 				logEventOnFxThread(message);
 			}
 		});
 	}
 
 	private void logEventOnFxThread(String message) {
-		activityLog.getItems().add(0, LOG_TIME.format(LocalTime.now()) + "  " + message);
-		if (activityLog.getItems().size() > MAX_LOG_ENTRIES) {
-			activityLog.getItems().remove(MAX_LOG_ENTRIES, activityLog.getItems().size());
+		activityEntries.add(0, LOG_TIME.format(LocalTime.now()) + "  " + message);
+		if (activityEntries.size() > MAX_LOG_ENTRIES) {
+			activityEntries.remove(MAX_LOG_ENTRIES, activityEntries.size());
 		}
+	}
+
+	private void refreshDashboardActivityEntries() {
+		if (dashboardActivityEntries == null) {
+			return;
+		}
+		dashboardActivityEntries.getChildren().clear();
+		if (activityEntries.isEmpty()) {
+			Label emptyMessage = new Label("Simulation events will appear here when the run starts.");
+			emptyMessage.getStyleClass().add("activity-entry-empty");
+			dashboardActivityEntries.getChildren().add(emptyMessage);
+			return;
+		}
+		activityEntries.stream().limit(5).map(message -> {
+			Label entry = new Label(message);
+			entry.getStyleClass().add("activity-entry");
+			entry.setMaxWidth(Double.MAX_VALUE);
+			return entry;
+		}).forEach(dashboardActivityEntries.getChildren()::add);
 	}
 
 	private void runOnFxThread(Runnable action) {
@@ -1422,6 +2315,9 @@ public class Main extends Application implements ParkingListener {
 	@Override
 	public void stop() {
 		stopSimulation();
+		if (monitorElapsedTimeline != null) {
+			monitorElapsedTimeline.stop();
+		}
 	}
 
 	public static void main(String[] args) {

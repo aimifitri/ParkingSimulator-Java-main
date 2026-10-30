@@ -129,6 +129,184 @@
     -fx-min-height: 190px;
 }
 
+.dashboard-welcome {
+    -fx-background-color: linear-gradient(to right, #142B4A, #21476F);
+    -fx-background-radius: 14px;
+    -fx-padding: 18px 20px;
+    -fx-effect: dropshadow(gaussian, rgba(20, 43, 74, 0.12), 16, 0, 0, 5);
+}
+
+.dashboard-eyebrow {
+    -fx-text-fill: #9FC2FF;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-welcome-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-welcome-copy {
+    -fx-text-fill: #C1D0E3;
+    -fx-font-size: 11px;
+}
+
+.dashboard-state-pill, .dashboard-activity-state {
+    -fx-background-radius: 20px;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 9px;
+}
+
+.dashboard-state-idle, .activity-state-idle {
+    -fx-background-color: #EAF1FB;
+    -fx-text-fill: #344F70;
+}
+
+.dashboard-state-running, .activity-state-running {
+    -fx-background-color: #E8F8EF;
+    -fx-text-fill: #067647;
+}
+
+.dashboard-state-stopped, .activity-state-stopped {
+    -fx-background-color: #FEECEB;
+    -fx-text-fill: #B42318;
+}
+
+.dashboard-strategy-badge {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 20px;
+    -fx-padding: 5px 9px;
+}
+
+.dashboard-strategy-label {
+    -fx-text-fill: #C1D0E3;
+    -fx-font-size: 8px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-strategy-value {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 9px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-kpi-card {
+    -fx-padding: 12px 14px;
+}
+
+.dashboard-kpi-icon {
+    -fx-alignment: center;
+    -fx-background-radius: 10px;
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-min-width: 40px;
+    -fx-min-height: 40px;
+    -fx-max-width: 40px;
+    -fx-max-height: 40px;
+}
+
+.dashboard-kpi-icon-blue { -fx-background-color: #EFF6FF; -fx-text-fill: #3478F6; }
+.dashboard-kpi-icon-red { -fx-background-color: #FEF3F2; -fx-text-fill: #D92D20; }
+.dashboard-kpi-icon-green { -fx-background-color: #ECFDF3; -fx-text-fill: #039855; }
+.dashboard-kpi-icon-amber { -fx-background-color: #FFFAEB; -fx-text-fill: #B54708; }
+
+.dashboard-utilization {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 9px;
+    -fx-border-color: #E8EDF4;
+    -fx-border-radius: 9px;
+    -fx-padding: 10px 12px;
+}
+
+.dashboard-queue-stats {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #E8EDF4 transparent;
+    -fx-border-width: 0 0 1px 0;
+    -fx-padding: 0 2px 10px 2px;
+}
+
+.dashboard-inline-value {
+    -fx-font-size: 15px;
+}
+
+.occupancy-summary-value {
+    -fx-text-fill: #344054;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.dashboard-occupancy-progress {
+    -fx-accent: #3478F6;
+    -fx-pref-height: 8px;
+}
+
+.dashboard-occupancy-progress > .track {
+    -fx-background-color: #E4EAF2;
+    -fx-background-radius: 8px;
+}
+
+.dashboard-occupancy-progress > .bar {
+    -fx-background-radius: 8px;
+    -fx-background-insets: 0;
+}
+
+.dashboard-activity-panel {
+    -fx-padding: 12px 14px;
+}
+
+.dashboard-activity-entries {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E4EAF2;
+    -fx-border-radius: 8px;
+    -fx-padding: 8px 12px;
+}
+.activity-entry {
+    -fx-text-fill: #475467;
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-size: 11px;
+    -fx-text-overrun: ellipsis;
+}
+.activity-entry-empty {
+    -fx-text-fill: #667085;
+    -fx-font-size: 11px;
+}
+
+.monitor-scroll {
+    -fx-background-color: transparent;
+    -fx-background: transparent;
+    -fx-border-color: transparent;
+}
+
+.monitor-scroll > .viewport {
+    -fx-background-color: transparent;
+}
+
+.monitor-state-pill {
+    -fx-background-radius: 20px;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 5px 10px;
+}
+
+.monitor-state-idle {
+    -fx-background-color: #F2F4F7;
+    -fx-text-fill: #475467;
+}
+
+.monitor-state-running {
+    -fx-background-color: #ECFDF3;
+    -fx-text-fill: #027A48;
+}
+
+.monitor-state-stopped {
+    -fx-background-color: #FEF3F2;
+    -fx-text-fill: #B42318;
+}
+
 .metric-title {
     -fx-text-fill: #667085;
     -fx-font-size: 9px;
@@ -192,14 +370,134 @@
 .occupied-dot { -fx-background-color: #F04438; }
 .reserved-dot { -fx-background-color: #F79009; }
 
-.lot-scroll, .analytics-scroll {
+.lot-scroll, .analytics-scroll, .dashboard-scroll, .parking-lots-page-scroll,
+.reservations-page-scroll, .reports-page-scroll {
     -fx-background: transparent;
     -fx-background-color: transparent;
     -fx-border-color: transparent;
 }
 
-.lot-scroll > .viewport, .analytics-scroll > .viewport {
+.lot-scroll > .viewport, .analytics-scroll > .viewport, .dashboard-scroll > .viewport,
+.parking-lots-page-scroll > .viewport, .reservations-page-scroll > .viewport,
+.reports-page-scroll > .viewport {
     -fx-background-color: transparent;
+}
+
+.dashboard-analytics-column {
+    -fx-padding: 0;
+}
+
+.predictions-page-content {
+    -fx-padding: 2px 0 8px 0;
+}
+
+.prediction-model-explanation {
+    -fx-text-fill: #475467;
+    -fx-font-size: 11px;
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 7px;
+    -fx-padding: 9px 11px;
+}
+
+.prediction-unavailable {
+    -fx-text-fill: #667085;
+    -fx-font-size: 12px;
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 8px;
+    -fx-padding: 14px;
+}
+
+.historical-prediction-panel {
+    -fx-padding: 18px;
+}
+
+.parking-lots-page-content {
+    -fx-padding: 2px 0 8px 0;
+}
+
+.parking-lots-grid-card {
+    -fx-padding: 18px;
+}
+
+.reservations-page-content {
+    -fx-padding: 2px 0 8px 0;
+}
+
+.reports-page-content {
+    -fx-padding: 2px 0 8px 0;
+}
+
+.reports-summary {
+    -fx-spacing: 10px;
+}
+
+.reports-card {
+    -fx-padding: 18px;
+}
+
+.reports-empty-state {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E4EAF2;
+    -fx-border-radius: 8px;
+    -fx-padding: 18px;
+}
+
+.reports-activity-rows, .reports-reservation-rows {
+    -fx-spacing: 7px;
+}
+
+.report-activity-entry {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 7px;
+    -fx-text-fill: #475467;
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-size: 10px;
+    -fx-padding: 8px 10px;
+}
+
+.reservation-page-card {
+    -fx-padding: 18px;
+}
+
+.reservation-page-rows {
+    -fx-spacing: 8px;
+}
+
+.reservation-page-row {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E4EAF2;
+    -fx-border-radius: 8px;
+    -fx-padding: 12px 14px;
+}
+
+.reservation-row-vehicle {
+    -fx-text-fill: #142B4A;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.reservation-row-interval {
+    -fx-text-fill: #667085;
+    -fx-font-size: 11px;
+}
+
+.reservation-space-chip {
+    -fx-background-color: #EFF4FF;
+    -fx-background-radius: 7px;
+    -fx-text-fill: #245FD1;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 7px 9px;
+}
+
+.reservation-page-empty-state {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 8px;
+    -fx-border-color: #E4EAF2;
+    -fx-border-radius: 8px;
+    -fx-padding: 20px;
 }
 
 .parking-slot {
@@ -254,7 +552,16 @@
     -fx-text-fill: white;
 }
 
-.car-icon { -fx-font-size: 22px; }
+.vehicle-body { -fx-fill: #3478F6; }
+.vehicle-cabin { -fx-fill: #1D4ED8; }
+.vehicle-window { -fx-fill: #DCEBFF; }
+.vehicle-wheel { -fx-fill: #344054; }
+.vehicle-light { -fx-fill: #FDE68A; }
+.reservation-icon {
+    -fx-text-fill: #B54708;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
 .car-name {
     -fx-text-fill: #1D2939;
     -fx-font-size: 10px;
@@ -287,10 +594,34 @@
 .chart-pie { -fx-border-color: #FFFFFF; -fx-border-width: 1px; }
 .default-color0.chart-pie { -fx-pie-color: #12B76A; }
 .default-color1.chart-pie { -fx-pie-color: #F04438; }
+.occupancy-chart .default-color2.chart-pie { -fx-pie-color: #F79009; }
+.occupancy-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #12B76A; }
+.occupancy-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #F04438; }
+.occupancy-chart .default-color2.chart-legend-item-symbol { -fx-background-color: #F79009; }
 .chart-legend { -fx-background-color: transparent; }
 .chart-legend-item { -fx-text-fill: #667085; }
 .axis { -fx-tick-label-fill: #667085; }
 .axis-label { -fx-text-fill: #667085; }
+
+.forecast-chart .default-color0.chart-series-line {
+    -fx-stroke: #7F56D9;
+    -fx-stroke-width: 2.5px;
+    -fx-stroke-dash-array: 6 4;
+}
+.forecast-chart .default-color1.chart-series-line {
+    -fx-stroke: #F04438;
+    -fx-stroke-width: 3px;
+}
+.forecast-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #7F56D9; }
+.forecast-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #F04438; }
+.reports-occupancy-chart .default-color0.chart-series-line {
+    -fx-stroke: #F04438;
+    -fx-stroke-width: 2.5px;
+}
+.reports-occupancy-chart .default-color0.chart-line-symbol {
+    -fx-background-color: #F04438, #FFFFFF;
+}
+.reports-occupancy-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #F04438; }
 
 .activity-panel { -fx-background-color: transparent; }
 .live-pill {

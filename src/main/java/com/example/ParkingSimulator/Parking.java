@@ -193,7 +193,6 @@ public class Parking {
 	}
 
 	public void sortir(Voiture voiture) {
-		LOGGER.info("Car " + voiture.getNom() + " is trying to leave");
 		int place = voiture.getPlace();
 		int occupied;
 		int waiting;
@@ -202,9 +201,12 @@ public class Parking {
 		boolean releasePermit = false;
 		placesLock.lock();
 		try {
-			if (place < 0 || place >= nbrPlaces || !placeOccupe.get(place)) {
+			// Stop freezes the last visible inventory. Interrupted vehicle threads must not
+			// turn shutdown into synthetic departures or post-stop listener events.
+			if (!active || place < 0 || place >= nbrPlaces || !placeOccupe.get(place)) {
 				return;
 			}
+			LOGGER.info("Car " + voiture.getNom() + " is trying to leave");
 			placeOccupe.set(place, false);
 			occupyingVehicleIds.set(place, null);
 			if (voiture.getReservation() != null) {
@@ -395,7 +397,7 @@ public class Parking {
 	}
 
 	private void publishMetrics() {
-		if (listener != null) {
+		if (active && listener != null) {
 			listener.parkingMetrics(this, occupiedCount(), waitingCount);
 		}
 	}

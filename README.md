@@ -2,6 +2,11 @@
 
 ### A Java-based Smart Parking Prediction & Reservation System using JavaFX. It forecasts occupancy from scheduled arrivals and reservations, and simulates parking with configurable synchronization strategies (Semaphore or Mutex).
 
+## Requirements
+
+* JDK 21 (LTS)
+* Maven 3.x, or use the included Maven wrapper
+
 ## Features:
 
 * Live Parking Lot Dashboard: Displays numbered parking slots, a marked driving lane, and animated vehicle cards showing each car ID.
