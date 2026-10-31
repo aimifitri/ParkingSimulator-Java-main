@@ -56,6 +56,7 @@ public final class AppShell extends BorderPane {
 	private final BorderPane mainLayout = new BorderPane();
 	private final Map<Page, Button> navigationButtons = new EnumMap<>(Page.class);
 	private final Consumer<Page> navigationHandler;
+	private Consumer<String> searchHandler = query -> { };
 
 	private final Label breadcrumbLabel = new Label();
 	private final TextField searchField = new TextField();
@@ -113,6 +114,14 @@ public final class AppShell extends BorderPane {
 		BorderPane.setMargin(content, new Insets(0, 28, 26, 28));
 	}
 
+	public void setSearchHandler(Consumer<String> searchHandler) {
+		this.searchHandler = searchHandler == null ? query -> { } : searchHandler;
+	}
+
+	public void showSearchMessage(String message) {
+		searchField.setTooltip(message == null || message.isBlank() ? null : new Tooltip(message));
+	}
+
 	private HBox createTopHeaderBar() {
 		HBox bar = new HBox(16);
 		bar.getStyleClass().add("top-header-bar");
@@ -129,6 +138,7 @@ public final class AppShell extends BorderPane {
 		searchField.setMinWidth(120);
 		searchField.setMaxWidth(Double.MAX_VALUE);
 		HBox.setHgrow(searchField, Priority.ALWAYS);
+		searchField.setOnAction(event -> searchHandler.accept(searchField.getText()));
 
 		Label weatherChip = new Label("28°C  Kuala Lumpur");
 		weatherChip.getStyleClass().add("top-header-weather");

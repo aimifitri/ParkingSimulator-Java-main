@@ -219,6 +219,7 @@ public class Main extends Application implements ParkingListener {
 		}
 		Parking.configureLogging();
 		appShell = new AppShell(this::navigateTo);
+		appShell.setSearchHandler(this::searchCarParks);
 		dashboardView = new DashboardView(carParkRepository,
 				() -> parking,
 				() -> switch (simulationState) {
@@ -274,6 +275,27 @@ public class Main extends Application implements ParkingListener {
 		primaryStage.setMinHeight(720);
 		primaryStage.setScene(scene);
 		primaryStage.show();
+	}
+
+	private void searchCarParks(String query) {
+		String normalizedQuery = query == null ? "" : query.strip().toLowerCase(java.util.Locale.ROOT);
+		if (normalizedQuery.isEmpty()) {
+			appShell.showSearchMessage("Enter a car park name or location.");
+			return;
+		}
+		CarPark match = carParkRepository.getAllCarParks().stream()
+				.filter(park -> park.name().toLowerCase(java.util.Locale.ROOT).contains(normalizedQuery)
+						|| park.location().toLowerCase(java.util.Locale.ROOT).contains(normalizedQuery))
+				.sorted(java.util.Comparator.comparingInt(park ->
+						park.name().equalsIgnoreCase(query.strip()) ? 0 : 1))
+				.findFirst().orElse(null);
+		if (match == null) {
+			appShell.showSearchMessage("No car park found for ‘" + query.strip() + "’.");
+			return;
+		}
+		appShell.showSearchMessage(null);
+		parkingLotsView.selectCarPark(match);
+		navigateTo(AppShell.Page.PARKING_LOTS);
 	}
 
 	private void showConfigurationScreen(AppShell.Page page) {

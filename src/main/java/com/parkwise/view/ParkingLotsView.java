@@ -96,6 +96,22 @@ public class ParkingLotsView extends BorderPane {
 		return selectedSlotNumber;
 	}
 
+	public void selectCarPark(CarPark carPark) {
+		if (carPark == null) {
+			return;
+		}
+		selectedCarPark = carPark;
+		selectedSlotNumber = -1;
+		filter = "All";
+		if (carParkSelector != null) {
+			carParkSelector.setValue(carPark);
+		}
+		if (onCarParkChange != null) {
+			onCarParkChange.accept(carPark);
+		}
+		refresh();
+	}
+
 	private void build() {
 		VBox root = new VBox();
 		root.getStyleClass().add("parking-lots-root");
