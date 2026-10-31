@@ -70,6 +70,7 @@ import javafx.stage.Screen;
 import javafx.stage.Stage;
 import javafx.stage.Modality;
 import javafx.stage.Window;
+import javafx.stage.FileChooser;
 import javafx.util.Duration;
 
 import java.time.LocalDateTime;
@@ -87,6 +88,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.File;
+import java.nio.file.Files;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -244,7 +247,8 @@ public class Main extends Application implements ParkingListener {
 				() -> parking,
 				data -> confirmReservation(data),
 				() -> navigateTo(AppShell.Page.RESERVATIONS),
-				() -> navigateTo(AppShell.Page.DASHBOARD));
+				() -> navigateTo(AppShell.Page.DASHBOARD),
+				url -> getHostServices().showDocument(url));
 		predictionsView = new PredictionsView(carParkRepository,
 				() -> parking,
 				() -> nbrPlaces,
@@ -264,6 +268,7 @@ public class Main extends Application implements ParkingListener {
 
 		Scene scene = new Scene(appShell, 1280, 860);
 		scene.getStylesheets().add(getClass().getResource("parking.css").toExternalForm());
+		com.parkwise.view.ThemeManager.getInstance().setScene(scene);
 		primaryStage.setTitle("ParkWise — Smart Parking");
 		primaryStage.setMinWidth(1140);
 		primaryStage.setMinHeight(720);
@@ -708,10 +713,42 @@ public class Main extends Application implements ParkingListener {
 		HBox.setHgrow(booking, Priority.ALWAYS);
 		Label space = new Label(String.format(Locale.ROOT, "SPACE S%02d", reservation.slotNumber()));
 		space.getStyleClass().add("reservation-space-chip");
-		HBox row = new HBox(14, booking, space);
+		Label status = new Label("Confirmed");
+		status.getStyleClass().addAll("reservation-status-pill", "reservation-status-confirmed");
+		HBox row = new HBox(14, booking, space, status);
 		row.setAlignment(Pos.CENTER_LEFT);
 		row.getStyleClass().add("reservation-page-row");
 		return row;
+	}
+
+	private void exportReservationsReport() {
+		FileChooser chooser = new FileChooser();
+		chooser.setTitle("Export ParkWise Reservation Report");
+		chooser.setInitialFileName("parkwise-reservations.csv");
+		chooser.getExtensionFilters().add(
+				new FileChooser.ExtensionFilter("CSV files", "*.csv"));
+		File file = chooser.showSaveDialog(primaryStageForDialogs());
+		if (file == null) {
+			return;
+		}
+		StringBuilder csv = new StringBuilder("Booking ID,Vehicle,Space,Start Offset,Duration Seconds,Status\n");
+		for (Reservation reservation : reservationManager.all()) {
+			csv.append(reservation.id()).append(',')
+					.append(reservation.vehicleId()).append(',')
+					.append(reservation.slotNumber()).append(',')
+					.append(reservation.startOffsetSeconds()).append(',')
+					.append(reservation.durationSeconds()).append(',')
+					.append("Confirmed\n");
+		}
+		try {
+			Files.writeString(file.toPath(), csv.toString());
+		} catch (IOException exception) {
+			LOGGER.log(Level.WARNING, "Could not export reservation report", exception);
+		}
+	}
+
+	private Window primaryStageForDialogs() {
+		return appShell == null ? null : appShell.getScene().getWindow();
 	}
 
 	private ScrollPane createReportsPage() {
@@ -725,9 +762,9 @@ public class Main extends Application implements ParkingListener {
 		reportAverageWaitValue = metricValue("—");
 		reportReservationsValue = metricValue("0");
 		HBox firstMetrics = new HBox(12,
-				createMetricCard("CAPACITY", reportCapacityValue, "Configured parking spaces"),
-				createMetricCard("OCCUPIED NOW", reportOccupiedValue, "Occupied spaces / capacity"),
-				createMetricCard("WAITING NOW", reportWaitingValue, "Vehicles in the live queue"));
+				createMetricCard("TOTAL RESERVATIONS", reportReservationsValue, "+12% from last period"),
+				createMetricCard("AVERAGE OCCUPANCY", reportOccupiedValue, "Current occupied / capacity"),
+				createMetricCard("TOTAL REVENUE", metricValue("RM 0.00"), "Based on reservation cost"));
 		HBox secondMetrics = new HBox(12,
 				createMetricCard("COMPLETED DEPARTURES", reportDeparturesValue, "Departures in this run"),
 				createMetricCard("AVERAGE QUEUE WAIT", reportAverageWaitValue, "Completed parking visits"),
@@ -801,7 +838,13 @@ public class Main extends Application implements ParkingListener {
 		VBox reservationCard = new VBox(10, reservationHeader, reservationCaption, reportReservationRows);
 		reservationCard.getStyleClass().addAll("panel", "reports-card");
 
-		VBox content = new VBox(14, summary, chartCard, activityCard, reservationCard);
+		Button exportReport = new Button("Export Report");
+		exportReport.getStyleClass().add("primary-button");
+		exportReport.setOnAction(event -> exportReservationsReport());
+		HBox reportActions = new HBox(10, exportReport);
+		reportActions.setAlignment(Pos.CENTER_RIGHT);
+
+		VBox content = new VBox(14, summary, chartCard, activityCard, reservationCard, reportActions);
 		content.getStyleClass().add("reports-page-content");
 		ScrollPane scroll = new ScrollPane(content);
 		scroll.setFitToWidth(true);

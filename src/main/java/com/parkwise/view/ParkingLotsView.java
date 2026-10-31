@@ -36,6 +36,7 @@ import javafx.scene.layout.VBox;
  * existing {@link CustomRectangle} component.
  */
 public class ParkingLotsView extends BorderPane {
+	public static final String SPACE_A05_IMAGE = "/public/images/space-a05.jpg";
 	private final CarParkRepository repository;
 	private final Supplier<Parking> parkingSupplier;
 	private final IntConsumer onReserveSelected;
@@ -296,8 +297,14 @@ public class ParkingLotsView extends BorderPane {
 		gridFields.getChildren().addAll(detailsFloor, detailsType, detailsRate, detailsVehicle, detailsBooking,
 				detailsCapacity, detailsOccupancy, detailsLocation, detailsCoordinates);
 
-		PlaceholderNode illustration = new PlaceholderNode("Space illustration", 260, 160);
+		Region illustration = new Region();
 		illustration.getStyleClass().add("lots-details-illustration");
+		illustration.setUserData(SPACE_A05_IMAGE);
+		illustration.setStyle("-fx-background-image: url(\"" + SPACE_A05_IMAGE + "\");"
+				+ "-fx-background-size: cover;");
+		illustration.setMinHeight(160);
+		illustration.setPrefHeight(160);
+		illustration.setMaxWidth(Double.MAX_VALUE);
 
 		reserveButton = new Button("Reserve Selected Space");
 		reserveButton.getStyleClass().add("lots-reserve-button");

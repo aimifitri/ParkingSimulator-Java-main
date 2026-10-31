@@ -1,0 +1,124 @@
+.root.theme-light, .root.theme-light .app-shell, .root.theme-light .dashboard-body,
+.root.theme-light .dashboard-scroll, .root.theme-light .dashboard-root,
+.root.theme-light .workspace, .root.theme-light .main-layout,
+.root.theme-light .predictions-page-root, .root.theme-light .predictions-scroll-wrapper,
+.root.theme-light .monitor-root, .root.theme-light .monitor-scroll-wrapper,
+.root.theme-light .reports-page-content, .root.theme-light .reports-page-scroll {
+    -fx-background-color: #F8FAFC;
+}
+
+.root.theme-light .top-header-bar, .root.theme-light .shell-header {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+}
+.root.theme-light .sidebar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+}
+.root.theme-light .sidebar-brand, .root.theme-light .nav-button,
+.root.theme-light .top-header-breadcrumb, .root.theme-light .top-header-user,
+.root.theme-light .top-header-weather, .root.theme-light .clock-label {
+    -fx-text-fill: #334155;
+}
+.root.theme-light .nav-button:hover {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #0F172A;
+}
+.root.theme-light .nav-button-active {
+    -fx-background-color: #DBEAFE;
+    -fx-text-fill: #1D4ED8;
+}
+
+.root.theme-light .shell-page-title, .root.theme-light .section-title,
+.root.theme-light .lots-grid-title, .root.theme-light .preds-section-title,
+.root.theme-light .res-step-title, .root.theme-light .res-section-title,
+.root.theme-light .monitor-kpi-title, .root.theme-light .overview-name,
+.root.theme-light .kpi-value, .root.theme-light .count-value,
+.root.theme-light .lots-details-space-id, .root.theme-light .preds-recommendation-name,
+.root.theme-light .preds-metric-value, .root.theme-light .res-carpark-name,
+.root.theme-light .res-meta-value-node, .root.theme-light .res-meta-value,
+.root.theme-light .monitor-kpi-value, .root.theme-light .metric-value {
+    -fx-text-fill: #0F172A;
+}
+.root.theme-light .shell-page-description, .root.theme-light .section-caption,
+.root.theme-light .lots-grid-caption, .root.theme-light .preds-section-caption,
+.root.theme-light .res-step-subtitle, .root.theme-light .hero-subtitle,
+.root.theme-light .kpi-caption, .root.theme-light .overview-rate,
+.root.theme-light .count-label, .root.theme-light .lots-detail-label,
+.root.theme-light .preds-recommendation-meta-text, .root.theme-light .res-cost-line,
+.root.theme-light .metric-caption {
+    -fx-text-fill: #64748B;
+}
+
+.root.theme-light .panel, .root.theme-light .kpi-card, .root.theme-light .overview-card,
+.root.theme-light .reservation-panel, .root.theme-light .map-section,
+.root.theme-light .res-step-card, .root.theme-light .res-cost-card,
+.root.theme-light .lots-details-card, .root.theme-light .preds-metric-pill,
+.root.theme-light .preds-recommendation-card, .root.theme-light .preds-forecast-chart,
+.root.theme-light .monitor-kpi-card, .root.theme-light .monitor-health-chip,
+.root.theme-light .monitor-log-section, .root.theme-light .reports-card,
+.root.theme-light .metric-card, .root.theme-light .lots-pill-card {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 10, 0, 0, 2);
+}
+.root.theme-light .panel:hover, .root.theme-light .kpi-card:hover,
+.root.theme-light .overview-card:hover, .root.theme-light .reservation-panel:hover,
+.root.theme-light .preds-recommendation-card:hover {
+    -fx-border-color: #CBD5E1;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.10), 14, 0, 0, 4);
+}
+
+.root.theme-light TextField, .root.theme-light ComboBox, .root.theme-light DatePicker,
+.root.theme-light .top-header-search {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #0F172A;
+    -fx-border-color: #CBD5E1;
+}
+.root.theme-light TableView, .root.theme-light .table-view .column-header-background {
+    -fx-background-color: #FFFFFF;
+}
+.root.theme-light TableView .column-header, .root.theme-light TableView .column-header .label {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #334155;
+}
+.root.theme-light TableView .table-cell {
+    -fx-text-fill: #334155;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+
+.root.theme-light .available-slot {
+    -fx-background-color: #D1FAE5;
+    -fx-text-fill: #166534;
+    -fx-border-color: #86EFAC;
+}
+.root.theme-light .occupied-slot {
+    -fx-background-color: #FFE4E6;
+    -fx-text-fill: #9F1239;
+    -fx-border-color: #FDA4AF;
+}
+.root.theme-light .reserved-slot {
+    -fx-background-color: #FEF3C7;
+    -fx-text-fill: #92400E;
+    -fx-border-color: #FCD34D;
+}
+.root.theme-light .selected-slot {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: #FFFFFF;
+    -fx-border-color: #1D4ED8;
+}
+
+.root.theme-light .theme-toggle-button {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #334155;
+    -fx-border-color: #CBD5E1;
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-font-size: 16px;
+    -fx-padding: 7px 10px;
+    -fx-cursor: hand;
+}
+.root.theme-light .theme-toggle-button:hover {
+    -fx-background-color: #E2E8F0;
+    -fx-border-color: #94A3B8;
+}

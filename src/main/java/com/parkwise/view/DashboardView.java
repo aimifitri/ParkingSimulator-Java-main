@@ -39,6 +39,10 @@ import javafx.scene.layout.VBox;
  * triggers user actions through callbacks supplied by {@link Main}.
  */
 public class DashboardView extends BorderPane {
+	public static final String CITY_MALL_IMAGE = "/public/images/city-mall.jpg";
+	public static final String CENTRAL_STATION_IMAGE = "/public/images/central-station.jpg";
+	public static final String STADIUM_WEST_IMAGE = "/public/images/stadium-west.jpg";
+	public static final String SKYLINE_BANNER_IMAGE = "/public/images/skyline-banner.jpg";
 	private final CarParkRepository repository;
 	private final Supplier<Parking> parkingSupplier;
 	private final Supplier<String> statusText;
@@ -308,6 +312,18 @@ public class DashboardView extends BorderPane {
 		card.setPrefWidth(300);
 		card.setMaxWidth(Double.MAX_VALUE);
 
+		Region thumbnail = new Region();
+		thumbnail.getStyleClass().add("overview-card-thumbnail");
+		String parkName = park.name().toLowerCase(java.util.Locale.ROOT);
+		String imagePath = parkName.contains("central") ? CENTRAL_STATION_IMAGE
+				: parkName.contains("stadium") ? STADIUM_WEST_IMAGE : CITY_MALL_IMAGE;
+		thumbnail.setUserData(imagePath);
+		thumbnail.setStyle("-fx-background-image: url(\"" + imagePath + "\");"
+				+ "-fx-background-size: cover;");
+		thumbnail.setMinHeight(96);
+		thumbnail.setPrefHeight(96);
+		thumbnail.setMaxWidth(Double.MAX_VALUE);
+
 		HBox top = new HBox(8);
 		Label name = new Label(park.name());
 		name.getStyleClass().add("overview-name");
@@ -338,7 +354,7 @@ public class DashboardView extends BorderPane {
 		details.setOnAction(e -> onViewAllCarParks.run());
 		rateRow.getChildren().addAll(rate, r2, details);
 
-		card.getChildren().addAll(top, progress, counts, rateRow);
+		card.getChildren().addAll(thumbnail, top, progress, counts, rateRow);
 		return card;
 	}
 

@@ -1964,3 +1964,136 @@
 .predictions-scroll-wrapper {
     -fx-background-color: #F4F6F9;
 }
+
+/* High-fidelity dark workspace theme and cross-screen micro-interactions. */
+.root, .app-shell, .dashboard-body, .dashboard-scroll, .dashboard-root,
+.predictions-page-root, .predictions-scroll-wrapper, .monitor-root, .monitor-scroll-wrapper,
+.reports-page-content, .reports-page-scroll {
+    -fx-background-color: #0F172A;
+}
+.workspace, .main-layout, .shell-header {
+    -fx-background-color: #0F172A;
+}
+.shell-header, .top-header-bar {
+    -fx-background-color: rgba(15, 23, 42, 0.96);
+    -fx-border-color: #1E293B;
+}
+.shell-page-title, .section-title, .lots-grid-title, .preds-section-title,
+.res-step-title, .res-section-title, .monitor-kpi-title {
+    -fx-text-fill: #F8FAFC;
+}
+.shell-page-description, .section-caption, .lots-grid-caption,
+.preds-section-caption, .res-step-subtitle {
+    -fx-text-fill: #94A3B8;
+}
+.panel, .kpi-card, .overview-card, .reservation-panel, .map-section,
+.res-step-card, .res-cost-card, .lots-details-card, .preds-metric-pill,
+.preds-recommendation-card, .preds-forecast-chart, .monitor-kpi-card,
+.monitor-health-chip, .monitor-log-section, .reports-card, .metric-card {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #334155;
+    -fx-border-radius: 12px;
+    -fx-background-radius: 12px;
+}
+.panel:hover, .kpi-card:hover, .overview-card:hover, .reservation-panel:hover,
+.preds-recommendation-card:hover, .preds-metric-pill:hover, .monitor-health-chip:hover {
+    -fx-border-color: #64748B;
+    -fx-effect: dropshadow(gaussian, rgba(0, 240, 255, 0.12), 14, 0, 0, 4);
+}
+.hero-banner {
+    -fx-background-color:
+        linear-gradient(to right, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.58), transparent),
+        url("/public/images/skyline-banner.jpg"),
+        #0F172A;
+    -fx-background-size: cover;
+}
+.hero-title { -fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; }
+.hero-subtitle, .kpi-caption, .overview-rate, .count-label, .lots-detail-label,
+.preds-recommendation-meta-text, .res-carpark-location, .res-cost-line {
+    -fx-text-fill: #94A3B8;
+}
+.overview-card-thumbnail, .lots-details-illustration, .res-confirmation-thumbnail {
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+    -fx-border-color: #334155;
+}
+.overview-name, .kpi-value, .count-value, .overview-rate, .lots-details-space-id,
+.preds-recommendation-name, .preds-metric-value, .res-carpark-name, .res-meta-value-node,
+.res-meta-value, .monitor-kpi-value, .metric-value, .metric-caption {
+    -fx-text-fill: #F8FAFC;
+}
+.kpi-icon, .distance-chip, .availability-badge, .lots-pill-card, .monitor-state-pill,
+.monitor-strategy-pill, .monitor-health-status {
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+}
+.button, .toggle-button {
+    -fx-cursor: hand;
+}
+.button:hover, .toggle-button:hover {
+    -fx-scale-x: 1.01;
+    -fx-scale-y: 1.01;
+}
+.theme-toggle-button {
+    -fx-background-color: #334155;
+    -fx-text-fill: #F8FAFC;
+    -fx-border-color: #475569;
+    -fx-background-radius: 999px;
+    -fx-border-radius: 999px;
+    -fx-font-size: 16px;
+    -fx-padding: 7px 10px;
+    -fx-cursor: hand;
+}
+.theme-toggle-button:hover {
+    -fx-background-color: #475569;
+    -fx-border-color: #64748B;
+}
+.res-primary-button, .hero-button-primary, .find-button, .lots-reserve-button,
+.preds-primary-button, .preds-book-button, .monitor-primary-button {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: white;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(37, 99, 235, 0.22), 10, 0, 0, 3);
+}
+.res-primary-button:hover, .hero-button-primary:hover, .find-button:hover,
+.lots-reserve-button:hover, .preds-primary-button:hover, .preds-book-button:hover,
+.monitor-primary-button:hover {
+    -fx-background-color: #1D4ED8;
+}
+.res-secondary-button, .hero-button, .lots-filter-chip, .monitor-secondary-button,
+.monitor-strategy-toggle {
+    -fx-background-color: #334155;
+    -fx-text-fill: #E2E8F0;
+    -fx-border-color: #475569;
+    -fx-background-radius: 8px;
+    -fx-border-radius: 8px;
+}
+.available-slot, .available-slot:hover {
+    -fx-background-color: rgba(34, 197, 94, 0.16);
+    -fx-border-color: #22C55E;
+}
+.occupied-slot, .occupied-slot:hover {
+    -fx-background-color: rgba(239, 68, 68, 0.16);
+    -fx-border-color: #EF4444;
+}
+.reserved-slot, .reserved-slot:hover {
+    -fx-background-color: rgba(245, 158, 11, 0.16);
+    -fx-border-color: #F59E0B;
+}
+.selected-slot {
+    -fx-background-color: #2563EB;
+    -fx-border-color: #00F0FF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 240, 255, 0.28), 12, 0, 0, 0);
+}
+.parking-slot {
+    -fx-cursor: hand;
+    -fx-transition-duration: 150ms;
+}
+.monitor-state-running, .monitor-health-ok {
+    -fx-text-fill: #34D399;
+    -fx-background-color: rgba(16, 185, 129, 0.12);
+}
+.monitor-state-idle, .monitor-strategy-pill {
+    -fx-text-fill: #00F0FF;
+    -fx-background-color: rgba(6, 182, 212, 0.12);
+}

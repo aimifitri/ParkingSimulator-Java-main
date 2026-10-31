@@ -6,8 +6,11 @@ import com.parkwise.model.Reservation;
 import com.parkwise.service.CarParkRepository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -44,6 +47,7 @@ import javafx.scene.shape.Rectangle;
  * registration (BookingRecord + ReservationManager).
  */
 public class ReservationView extends BorderPane {
+	public static final String CITY_MALL_IMAGE = "/public/images/city-mall.jpg";
 	public record ConfirmationData(
 			String carParkId, String carParkName, String location, double hourlyRate,
 			int slotNumber, String slotLabel, LocalDate date, LocalTime startTime,
@@ -55,6 +59,7 @@ public class ReservationView extends BorderPane {
 	private final Consumer<ConfirmationData> onConfirm;
 	private final Runnable onViewMyReservations;
 	private final Runnable onBackToDashboard;
+	private final Consumer<String> openCalendarUrl;
 
 	private CarPark selectedCarPark;
 	private int selectedSlot = -1;
@@ -93,11 +98,21 @@ public class ReservationView extends BorderPane {
 			Consumer<ConfirmationData> onConfirm,
 			Runnable onViewMyReservations,
 			Runnable onBackToDashboard) {
+		this(repository, parkingSupplier, onConfirm, onViewMyReservations, onBackToDashboard, null);
+	}
+
+	public ReservationView(CarParkRepository repository,
+			Supplier<Parking> parkingSupplier,
+			Consumer<ConfirmationData> onConfirm,
+			Runnable onViewMyReservations,
+			Runnable onBackToDashboard,
+			Consumer<String> openCalendarUrl) {
 		this.repository = repository;
 		this.parkingSupplier = parkingSupplier;
 		this.onConfirm = onConfirm;
 		this.onViewMyReservations = onViewMyReservations;
 		this.onBackToDashboard = onBackToDashboard;
+		this.openCalendarUrl = openCalendarUrl;
 		getStyleClass().add("reservation-view");
 		setPadding(new Insets(0));
 		selectedCarPark = repository.getActiveLot();
@@ -406,6 +421,45 @@ public class ReservationView extends BorderPane {
 		}
 	}
 
+	private LocalDateTime getNextHalfHour(LocalDateTime now) {
+			LocalDateTime rounded = now.withSecond(0).withNano(0);
+			int minute = rounded.getMinute();
+			if (minute == 0 || minute == 30) {
+				if (now.getSecond() == 0 && now.getNano() == 0) {
+					return rounded;
+				}
+				return rounded.plusMinutes(minute == 0 ? 30L : 60L - minute);
+			}
+			return rounded.plusMinutes(30L - (minute % 30));
+	}
+
+	private void updateStep3Validation(DatePicker datePicker, ComboBox<String> timeBox,
+				DateTimeFormatter timeFormatter, Button confirmButton, Label feedback) {
+			selectedDate = datePicker.getValue();
+			String timeValue = timeBox.getValue();
+			if (timeValue != null) {
+				selectedStartTime = LocalTime.parse(timeValue, timeFormatter);
+			}
+
+			boolean valid = selectedDate != null && selectedStartTime != null
+					&& !selectedDate.isBefore(LocalDate.now())
+					&& !(selectedDate.equals(LocalDate.now())
+							&& selectedStartTime.isBefore(LocalTime.now()));
+			confirmButton.setDisable(!valid);
+
+			if (!valid && selectedDate != null && selectedStartTime != null
+					&& selectedDate.equals(LocalDate.now())) {
+				feedback.setText("Reservation start time cannot be in the past.");
+				feedback.getStyleClass().setAll("res-feedback", "res-feedback-error");
+			} else if (!valid && selectedDate != null && selectedDate.isBefore(LocalDate.now())) {
+				feedback.setText("Reservation date cannot be in the past.");
+				feedback.getStyleClass().setAll("res-feedback", "res-feedback-error");
+			} else {
+				feedback.setText("");
+				feedback.getStyleClass().setAll("res-feedback");
+			}
+	}
+
 	private VBox buildStep3() {
 		VBox card = new VBox(14);
 		card.getStyleClass().add("res-step-card");
@@ -420,21 +474,26 @@ public class ReservationView extends BorderPane {
 		DatePicker datePicker = new DatePicker(selectedDate);
 		datePicker.setPromptText("Date");
 		datePicker.setMaxWidth(Double.MAX_VALUE);
-		datePicker.setOnAction(e -> selectedDate = datePicker.getValue());
 
 		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
-		selectedStartTime = selectedStartTime == null ? LocalTime.of(10, 30) : selectedStartTime;
-		ComboBox<String> timeBox = new ComboBox<>(javafx.collections.FXCollections.observableArrayList(
-				"08:00 AM", "09:00 AM", "10:30 AM", "12:00 PM", "02:00 PM", "03:30 PM", "05:00 PM", "06:30 PM", "08:00 PM"));
+		if (selectedStartTime == null) {
+			LocalDateTime nextStart = getNextHalfHour(LocalDateTime.now());
+			selectedStartTime = nextStart.toLocalTime();
+			if (nextStart.toLocalDate().isAfter(selectedDate)) {
+				selectedDate = nextStart.toLocalDate();
+				datePicker.setValue(selectedDate);
+			}
+		}
+
+		java.util.List<String> startTimeOptions = new java.util.ArrayList<>();
+		LocalDateTime optionTime = LocalDateTime.of(LocalDate.now(), LocalTime.MIDNIGHT);
+		for (int i = 0; i < 48; i++) {
+			startTimeOptions.add(optionTime.plusMinutes(i * 30L).toLocalTime().format(timeFormatter));
+		}
+		ComboBox<String> timeBox = new ComboBox<>(javafx.collections.FXCollections.observableArrayList(startTimeOptions));
 		timeBox.setValue(selectedStartTime.format(timeFormatter));
 		timeBox.setPromptText("Start Time");
 		timeBox.setMaxWidth(Double.MAX_VALUE);
-		timeBox.setOnAction(e -> {
-			String v = timeBox.getValue();
-			if (v != null) {
-				selectedStartTime = LocalTime.parse(v, timeFormatter);
-			}
-		});
 
 		ComboBox<String> durationBox = new ComboBox<>(javafx.collections.FXCollections.observableArrayList(
 				"1 Hour", "2 Hours", "3 Hours", "4 Hours", "6 Hours", "8 Hours", "12 Hours"));
@@ -486,6 +545,12 @@ public class ReservationView extends BorderPane {
 			}
 			showConfirmation();
 		});
+
+		datePicker.setOnAction(e -> updateStep3Validation(
+				datePicker, timeBox, timeFormatter, confirmPayButton, step3Feedback));
+		timeBox.setOnAction(e -> updateStep3Validation(
+				datePicker, timeBox, timeFormatter, confirmPayButton, step3Feedback));
+		updateStep3Validation(datePicker, timeBox, timeFormatter, confirmPayButton, step3Feedback);
 
 		HBox actions = new HBox(10);
 		actions.getStyleClass().add("res-step-actions");
@@ -584,6 +649,22 @@ public class ReservationView extends BorderPane {
 		confirmationCost.setText("RM " + String.format("%.2f", pending.totalCost()));
 	}
 
+	private String buildCalendarUrl() {
+		if (pending == null) {
+			return null;
+		}
+		DateTimeFormatter googleDateTime = DateTimeFormatter.ofPattern("yyyyMMdd'T'HHmmss");
+		LocalDateTime start = LocalDateTime.of(pending.date(), pending.startTime());
+		LocalDateTime end = start.plusHours(pending.durationHours());
+		String title = "ParkWise Reservation - " + pending.slotLabel();
+		String details = pending.carParkName() + " - " + pending.location();
+
+		return "https://calendar.google.com/calendar/render?action=TEMPLATE"
+				+ "&text=" + URLEncoder.encode(title, StandardCharsets.UTF_8)
+				+ "&dates=" + start.format(googleDateTime) + "/" + end.format(googleDateTime)
+				+ "&details=" + URLEncoder.encode(details, StandardCharsets.UTF_8);
+	}
+
 	private VBox buildConfirmation() {
 		VBox root = new VBox(0);
 		root.getStyleClass().add("reservation-confirmation-root");
@@ -618,7 +699,16 @@ public class ReservationView extends BorderPane {
 		confirmationCost = new Label("RM 0.00");
 		confirmationCost.getStyleClass().add("res-meta-total");
 
-		card.getChildren().addAll(summaryTitle,
+		Region bookingThumbnail = new Region();
+		bookingThumbnail.getStyleClass().add("res-confirmation-thumbnail");
+		bookingThumbnail.setUserData(CITY_MALL_IMAGE);
+		bookingThumbnail.setStyle("-fx-background-image: url(\"" + CITY_MALL_IMAGE + "\");"
+				+ "-fx-background-size: cover;");
+		bookingThumbnail.setMinHeight(120);
+		bookingThumbnail.setPrefHeight(120);
+		bookingThumbnail.setMaxWidth(Double.MAX_VALUE);
+
+		card.getChildren().addAll(summaryTitle, bookingThumbnail,
 				metaRow("Booking ID", confirmationBookingId),
 				metaRow("Car Park & Location", confirmationCarPark),
 				metaRow("Reserved Space", confirmationSpace),
@@ -640,9 +730,19 @@ public class ReservationView extends BorderPane {
 		Button calendar = new Button("Add to Calendar");
 		calendar.getStyleClass().add("res-secondary-button");
 		calendar.setMaxWidth(Double.MAX_VALUE);
+		calendar.setDisable(false);
+		calendar.setOnAction(e -> {
+			if (openCalendarUrl != null) {
+				String calendarUrl = buildCalendarUrl();
+				if (calendarUrl != null) {
+					openCalendarUrl.accept(calendarUrl);
+				}
+			}
+		});
 		Button viewReservations = new Button("View My Reservations");
 		viewReservations.getStyleClass().add("res-primary-button");
 		viewReservations.setMaxWidth(Double.MAX_VALUE);
+		viewReservations.setDisable(false);
 		viewReservations.setOnAction(e -> {
 			if (onViewMyReservations != null) {
 				onViewMyReservations.run();
@@ -651,6 +751,7 @@ public class ReservationView extends BorderPane {
 		Button backDashboard = new Button("Back to Dashboard");
 		backDashboard.getStyleClass().add("res-secondary-button");
 		backDashboard.setMaxWidth(Double.MAX_VALUE);
+		backDashboard.setDisable(false);
 		backDashboard.setOnAction(e -> {
 			if (onBackToDashboard != null) {
 				onBackToDashboard.run();

@@ -15,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -59,6 +60,7 @@ public final class AppShell extends BorderPane {
 	private final Label breadcrumbLabel = new Label();
 	private final TextField searchField = new TextField();
 	private final Label clockLabel = new Label();
+	private final Button themeToggle = new Button();
 	private final Timeline clock;
 
 	public AppShell(Consumer<Page> navigationHandler) {
@@ -75,6 +77,11 @@ public final class AppShell extends BorderPane {
 
 		mainLayout.setTop(createTopHeaderBar());
 		mainLayout.setCenter(workspace);
+		sceneProperty().addListener((observable, oldScene, newScene) -> {
+			if (newScene != null) {
+				ThemeManager.getInstance().setScene(newScene);
+			}
+		});
 
 		clock.play();
 	}
@@ -135,12 +142,29 @@ public final class AppShell extends BorderPane {
 		userPill.setMinWidth(0);
 		userPill.setTextOverrun(OverrunStyle.ELLIPSIS);
 
-		HBox right = new HBox(12, clockLabel, weatherChip, userPill);
+		themeToggle.getStyleClass().add("theme-toggle-button");
+		themeToggle.setMinWidth(42);
+		updateThemeToggleText();
+		themeToggle.setOnAction(event -> {
+			ThemeManager.getInstance().toggle();
+			updateThemeToggleText();
+		});
+		ThemeManager.getInstance().modeProperty().addListener((observable, oldMode, newMode) ->
+				updateThemeToggleText());
+
+		HBox right = new HBox(12, clockLabel, weatherChip, userPill, themeToggle);
 		right.setAlignment(Pos.CENTER_RIGHT);
 		right.setMinWidth(0);
 
 		bar.getChildren().addAll(breadcrumbLabel, searchField, right);
 		return bar;
+	}
+
+	private void updateThemeToggleText() {
+		ThemeManager.Mode mode = ThemeManager.getInstance().getMode();
+		themeToggle.setText(mode == ThemeManager.Mode.DARK ? "☀️" : "🌙");
+		themeToggle.setTooltip(new Tooltip(
+				mode == ThemeManager.Mode.DARK ? "Switch to light mode" : "Switch to dark mode"));
 	}
 
 	private VBox createSidebar() {
