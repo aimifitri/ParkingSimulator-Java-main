@@ -22,7 +22,6 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
-import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ProgressBar;
@@ -1132,7 +1131,7 @@ public class Main extends Application implements ParkingListener {
 
 		TableView<Reservation> reservationTable = new TableView<>();
 		reservationTable.setItems(FXCollections.observableArrayList(reservationManager.all()));
-		reservationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		reservationTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_NEXT_COLUMN);
 		reservationTable.setPlaceholder(createReservationEmptyState());
 		reservationTable.getStyleClass().add("reservation-table");
 		reservationTable.setAccessibleText("Current reservations");
@@ -1152,7 +1151,9 @@ public class Main extends Application implements ParkingListener {
 		durationColumn.setCellValueFactory(data -> new ReadOnlyStringWrapper(
 				data.getValue().durationSeconds() + " sec"));
 		durationColumn.setPrefWidth(160);
-		reservationTable.getColumns().setAll(vehicleColumn, spaceColumn, arrivalColumn, durationColumn);
+		List<TableColumn<Reservation, ?>> reservationColumns =
+				List.of(vehicleColumn, spaceColumn, arrivalColumn, durationColumn);
+		reservationTable.getColumns().setAll(reservationColumns);
 
 		Label listTitle = new Label("Current reservations");
 		listTitle.getStyleClass().add("section-title");
