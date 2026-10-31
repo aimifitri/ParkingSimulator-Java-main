@@ -107,6 +107,9 @@ public class PredictionsView extends BorderPane {
 		if (selected != null) {
 			generatePrediction(selected.totalCapacity(), numCarsSupplier.get(), arrivalWindowSupplier.get(),
 					"2 Hours", seedSupplier.get());
+		} else {
+			generatePrediction(capacitySupplier.get(), numCarsSupplier.get(), arrivalWindowSupplier.get(),
+					"2 Hours", seedSupplier.get());
 		}
 	}
 
@@ -219,7 +222,7 @@ public class PredictionsView extends BorderPane {
 		if (predictedSeries == null || actualSeries == null) {
 			return;
 		}
-		int durationMillis = parseDurationHours(durationText) * 1000;
+		int durationMillis = parseDurationHours(durationText) * 60 * 60 * 1000;
 
 		List<Integer> delays = ArrivalSchedule.generateDelaysMillis(numCars, arrivalWindow, seed);
 		List<OccupancyForecast.Point> forecast = OccupancyForecast.predict(delays, durationMillis, capacity,

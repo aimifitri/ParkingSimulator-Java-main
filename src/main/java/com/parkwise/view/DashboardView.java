@@ -230,7 +230,7 @@ public class DashboardView extends BorderPane {
 		kpiAverageWait = new Label("0.00 s");
 
 		bar.getChildren().addAll(
-				kpiCard("Total Spaces", kpiTotalSpaces, "Across locations", "\u25A0", "#0066FF"),
+				kpiCard("Total Capacity", kpiTotalSpaces, "Across locations", "\u25A0", "#0066FF"),
 				kpiCard("Available Spaces", kpiAvailable, "Ready for vehicles", "\u2713", "#22C55E"),
 				kpiCard("Occupied Spaces", kpiOccupied, "In use right now", "\u25CB", "#EF4444"),
 				kpiCard("Active Reservations", kpiReserved, "Future bookings", "\u25CF", "#F59E0B"),

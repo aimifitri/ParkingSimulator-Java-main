@@ -13,8 +13,8 @@ import com.parkwise.view.AppShell;
 import com.parkwise.view.CustomRectangle;
 import com.parkwise.view.DashboardView;
 import com.parkwise.view.ParkingLotsView;
-import com.parkwise.view.PlaceholderView;
 import com.parkwise.view.PredictionsView;
+import com.parkwise.view.ReportsView;
 import com.parkwise.view.ReservationView;
 import com.parkwise.view.SimulationMonitorView;
 import com.parkwise.service.ArrivalSchedule;
@@ -105,6 +105,7 @@ public class Main extends Application implements ParkingListener {
 	private ParkingLotsView parkingLotsView;
 	private ReservationView reservationView;
 	private PredictionsView predictionsView;
+	private ReportsView reportsView;
 	private final java.util.concurrent.atomic.AtomicInteger bookingSequence = new java.util.concurrent.atomic.AtomicInteger(0);
 	private Node setupView;
 	private Button launchButton;
@@ -275,7 +276,7 @@ public class Main extends Application implements ParkingListener {
 			refreshDashboardActivityEntries();
 			refreshReportsPage();
 		});
-		showConfigurationScreen(AppShell.Page.DASHBOARD);
+		appShell.showPage(AppShell.Page.DASHBOARD, dashboardView);
 
 		Scene scene = new Scene(appShell, 1280, 860);
 		scene.getStylesheets().add(getClass().getResource("parking.css").toExternalForm());
@@ -433,21 +434,12 @@ public class Main extends Application implements ParkingListener {
 		}
 		switch (page) {
 			case DASHBOARD -> {
-				if (!simulationLaunched) {
-					showConfigurationScreen(AppShell.Page.DASHBOARD);
-				} else {
-					appShell.showPage(AppShell.Page.DASHBOARD, dashboardView);
-					dashboardView.refresh();
-				}
+				appShell.showPage(AppShell.Page.DASHBOARD, dashboardView);
+				dashboardView.refresh();
 			}
 			case PARKING_LOTS -> {
-				if (!simulationLaunched || parkingLotPanel == null) {
-					appShell.showPage(page, new PlaceholderView("No active parking lot",
-							"Launch a simulation from Dashboard to view its live parking-space grid."));
-				} else {
-					appShell.showPage(page, parkingLotsView);
-					parkingLotsView.refresh();
-				}
+				appShell.showPage(page, parkingLotsView);
+				parkingLotsView.refresh();
 			}
 			case RESERVATIONS -> {
 				appShell.showPage(page, reservationView);
@@ -464,7 +456,11 @@ public class Main extends Application implements ParkingListener {
 				}
 			}
 			case REPORTS -> {
-				appShell.showPage(page, createReportsPage());
+				if (reportsView == null) {
+					reportsView = new ReportsView();
+				}
+				reportsView.setContent(createReportsPage());
+				appShell.showPage(page, reportsView);
 				refreshReportsPage();
 			}
 			case SETTINGS -> showConfigurationScreen(AppShell.Page.SETTINGS);
@@ -2043,8 +2039,6 @@ public class Main extends Application implements ParkingListener {
 					public void carParked(Parking source, int place, String carName, int occupied, int waiting, long waitMillis) {
 						Main.this.carParked(source, place, carName, occupied, waiting, waitMillis);
 						carParkRepository.carParked(source, place, carName, occupied, waiting, waitMillis);
-						runOnFxThread(() -> parkingLotsView.refresh());
-						runOnFxThread(() -> predictionsView.refresh());
 						refreshAllPresentationViews();
 					}
 
@@ -2053,8 +2047,6 @@ public class Main extends Application implements ParkingListener {
 							double averageWaitMillis, int exits) {
 						Main.this.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
 						carParkRepository.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
-						runOnFxThread(() -> parkingLotsView.refresh());
-						runOnFxThread(() -> predictionsView.refresh());
 						refreshAllPresentationViews();
 					}
 
@@ -2062,8 +2054,6 @@ public class Main extends Application implements ParkingListener {
 					public void parkingMetrics(Parking source, int occupied, int waiting) {
 						Main.this.parkingMetrics(source, occupied, waiting);
 						carParkRepository.parkingMetrics(source, occupied, waiting);
-						runOnFxThread(() -> parkingLotsView.refresh());
-						runOnFxThread(() -> predictionsView.refresh());
 						refreshAllPresentationViews();
 					}
 				},
