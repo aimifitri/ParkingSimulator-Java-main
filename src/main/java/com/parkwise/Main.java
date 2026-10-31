@@ -21,6 +21,7 @@ import com.parkwise.view.PredictionsView;
 import com.parkwise.view.ReportsView;
 import com.parkwise.view.ReservationView;
 import com.parkwise.view.SimulationMonitorView;
+import com.parkwise.view.SettingsView;
 
 import javafx.animation.PauseTransition;
 import javafx.animation.KeyFrame;
@@ -48,6 +49,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
+import javafx.scene.control.Separator;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
@@ -218,7 +220,8 @@ public class Main extends Application implements ParkingListener {
 			historicalDataUnavailableMessage = "Historical occupancy data could not be loaded. The bundled Birmingham dataset is required for this view.";
 		}
 		Parking.configureLogging();
-		appShell = new AppShell(this::navigateTo, this::searchCarPark);
+		appShell = new AppShell(this::navigateTo);
+		appShell.setSearchHandler(this::searchCarParks);
 		dashboardView = new DashboardView(carParkRepository,
 				() -> parking,
 				() -> switch (simulationState) {
@@ -274,6 +277,28 @@ public class Main extends Application implements ParkingListener {
 		primaryStage.setMinHeight(720);
 		primaryStage.setScene(scene);
 		primaryStage.show();
+	}
+
+	private void searchCarParks(String query) {
+		String normalizedQuery = query == null ? "" : query.strip().toLowerCase(java.util.Locale.ROOT);
+		if (normalizedQuery.isEmpty()) {
+			appShell.showSearchMessage("Enter a car park name or location.");
+			return;
+		}
+		CarPark match = carParkRepository.getAllCarParks().stream()
+				.filter(park -> park.name().toLowerCase(java.util.Locale.ROOT).contains(normalizedQuery)
+						|| park.id().toLowerCase(java.util.Locale.ROOT).contains(normalizedQuery)
+						|| park.location().toLowerCase(java.util.Locale.ROOT).contains(normalizedQuery))
+				.sorted(java.util.Comparator.comparingInt(park ->
+						park.name().equalsIgnoreCase(query.strip()) ? 0 : 1))
+				.findFirst().orElse(null);
+		if (match == null) {
+			appShell.showSearchMessage("No car park found for ‘" + query.strip() + "’.");
+			return;
+		}
+		appShell.showSearchMessage(null);
+		parkingLotsView.selectCarPark(match);
+		navigateTo(AppShell.Page.PARKING_LOTS);
 	}
 
 	private void showConfigurationScreen(AppShell.Page page) {
@@ -387,15 +412,40 @@ public class Main extends Application implements ParkingListener {
 			launchLiveDashboard();
 		});
 
-		VBox configCard = new VBox(20, header, strategyLabel, strategyBox, paramsLabel, paramsBox, presetsBox,
-				reservationsRow, timingBox, launchFeedback, launchButton);
-		configCard.getStyleClass().add("panel");
-		configCard.setMaxWidth(800);
-		configCard.setPadding(new Insets(30));
+		VBox systemContent = new VBox(18, header, strategyLabel, strategyBox, paramsLabel, paramsBox,
+				presetsBox, reservationsRow);
+		systemContent.getStyleClass().add("settings-section");
+		Label timingsTitle = new Label("Simulation timings");
+		timingsTitle.getStyleClass().add("settings-section-title");
+		Label timingsDescription = new Label("Control how quickly vehicles arrive and how long each parking session lasts.");
+		timingsDescription.getStyleClass().add("settings-description");
+		VBox timingsContent = new VBox(18, timingsTitle, timingsDescription, timingBox);
+		timingsContent.getStyleClass().add("settings-section");
 
-		StackPane centerContainer = new StackPane(configCard);
-		centerContainer.setAlignment(Pos.CENTER);
-		setupView = centerContainer;
+		Label aboutTitle = new Label("ParkWise Smart Parking");
+		aboutTitle.getStyleClass().add("settings-section-title");
+		Label aboutDescription = new Label("A JavaFX parking simulation demonstrating safe concurrent allocation and reservation workflows.");
+		aboutDescription.getStyleClass().add("settings-description");
+		Label versionInfo = new Label("Application version 1.0-SNAPSHOT");
+		Label javaInfo = new Label("Java runtime " + System.getProperty("java.version", "Unknown"));
+		Label javafxInfo = new Label("JavaFX runtime " + System.getProperty("javafx.runtime.version",
+				System.getProperty("javafx.version", "21")));
+		Label osInfo = new Label("Operating system " + System.getProperty("os.name", "Unknown") + " "
+				+ System.getProperty("os.version", ""));
+		Label architectureTitle = new Label("OS Chapter 4 architecture");
+		architectureTitle.getStyleClass().add("settings-preference-title");
+		Label architecture = new Label("The application is organized into model, service, strategy, and view layers. "
+				+ "Semaphore and mutex strategies coordinate concurrent vehicle access while repositories and reservation "
+				+ "services manage parking state and bookings.");
+		architecture.getStyleClass().add("settings-description");
+		architecture.setWrapText(true);
+		VBox aboutContent = new VBox(12, aboutTitle, aboutDescription, new Separator(), versionInfo, javaInfo,
+				javafxInfo, osInfo, new Separator(), architectureTitle, architecture);
+		aboutContent.getStyleClass().add("settings-section");
+		HBox launchActions = new HBox(16, launchFeedback, launchButton);
+		launchActions.setAlignment(Pos.CENTER_RIGHT);
+		HBox.setHgrow(launchFeedback, Priority.ALWAYS);
+		setupView = new SettingsView(systemContent, timingsContent, null, aboutContent, launchActions);
 		appShell.showPage(page,
 				page == AppShell.Page.SETTINGS ? "Settings" : "Dashboard",
 				page == AppShell.Page.SETTINGS
@@ -454,23 +504,6 @@ public class Main extends Application implements ParkingListener {
 			}
 			case SETTINGS -> showConfigurationScreen(AppShell.Page.SETTINGS);
 		}
-	}
-
-	private boolean searchCarPark(String query) {
-		String normalizedQuery = query.toLowerCase(Locale.ROOT);
-		CarPark match = carParkRepository.getAllCarParks().stream()
-				.filter(carPark -> carPark.name().toLowerCase(Locale.ROOT).contains(normalizedQuery)
-						|| carPark.id().toLowerCase(Locale.ROOT).contains(normalizedQuery)
-						|| carPark.location().toLowerCase(Locale.ROOT).contains(normalizedQuery))
-				.findFirst()
-				.orElse(null);
-		if (match == null) {
-			return false;
-		}
-
-		parkingLotsView.selectCarPark(match);
-		navigateTo(AppShell.Page.PARKING_LOTS);
-		return true;
 	}
 
 	private Node showSimulationMonitor() {

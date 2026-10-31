@@ -5,7 +5,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -57,7 +56,7 @@ public final class AppShell extends BorderPane {
 	private final BorderPane mainLayout = new BorderPane();
 	private final Map<Page, Button> navigationButtons = new EnumMap<>(Page.class);
 	private final Consumer<Page> navigationHandler;
-	private final Function<String, Boolean> searchHandler;
+	private Consumer<String> searchHandler = query -> { };
 
 	private final Label breadcrumbLabel = new Label();
 	private final TextField searchField = new TextField();
@@ -66,17 +65,13 @@ public final class AppShell extends BorderPane {
 	private final Timeline clock;
 
 	public AppShell(Consumer<Page> navigationHandler) {
-		this(navigationHandler, ignored -> false);
-	}
-
-	public AppShell(Consumer<Page> navigationHandler, Function<String, Boolean> searchHandler) {
 		this.navigationHandler = navigationHandler;
-		this.searchHandler = searchHandler;
 		getStyleClass().add("app-shell");
 		setLeft(createSidebar());
 		setCenter(mainLayout);
 
 		DateTimeFormatter clockFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy | hh:mm a");
+		clockLabel.getStyleClass().add("top-header-clock");
 		clockLabel.setText(clockFormatter.format(LocalDateTime.now()));
 		clock = new Timeline(new KeyFrame(Duration.seconds(1), event ->
 				clockLabel.setText(clockFormatter.format(LocalDateTime.now()))));
@@ -120,6 +115,14 @@ public final class AppShell extends BorderPane {
 		BorderPane.setMargin(content, new Insets(0, 28, 26, 28));
 	}
 
+	public void setSearchHandler(Consumer<String> searchHandler) {
+		this.searchHandler = searchHandler == null ? query -> { } : searchHandler;
+	}
+
+	public void showSearchMessage(String message) {
+		searchField.setTooltip(message == null || message.isBlank() ? null : new Tooltip(message));
+	}
+
 	private HBox createTopHeaderBar() {
 		HBox bar = new HBox(16);
 		bar.getStyleClass().add("top-header-bar");
@@ -130,24 +133,13 @@ public final class AppShell extends BorderPane {
 		breadcrumbLabel.setMinWidth(0);
 		breadcrumbLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
 
-		searchField.setPromptText("Search location, car park...");
+		searchField.setPromptText("⌕  Search location, car park...");
 		searchField.getStyleClass().add("top-header-search");
 		searchField.setPrefWidth(280);
 		searchField.setMinWidth(120);
 		searchField.setMaxWidth(Double.MAX_VALUE);
 		HBox.setHgrow(searchField, Priority.ALWAYS);
-		searchField.setOnAction(event -> {
-			String query = searchField.getText().trim();
-			if (query.isEmpty()) {
-				return;
-			}
-			if (searchHandler.apply(query)) {
-				searchField.clear();
-				searchField.setTooltip(null);
-			} else {
-				searchField.setTooltip(new Tooltip("No matching car park or location."));
-			}
-		});
+		searchField.setOnAction(event -> searchHandler.accept(searchField.getText()));
 		searchField.textProperty().addListener((observable, previous, current) -> searchField.setTooltip(null));
 
 		Label weatherChip = new Label("28°C  Kuala Lumpur");
@@ -157,10 +149,14 @@ public final class AppShell extends BorderPane {
 		clockLabel.setMinWidth(0);
 		clockLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
 
-		Label userPill = new Label("Driver Online");
-		userPill.getStyleClass().add("top-header-user");
-		userPill.setMinWidth(0);
-		userPill.setTextOverrun(OverrunStyle.ELLIPSIS);
+		Label avatar = new Label("D");
+		avatar.getStyleClass().add("top-header-avatar");
+		VBox userDetails = new VBox(1);
+		Label userName = new Label("Driver");
+		userName.getStyleClass().add("top-header-user-name");
+		Label userStatus = new Label("● Online");
+		userStatus.getStyleClass().add("top-header-user-status");
+		userDetails.getChildren().addAll(userName, userStatus);
 
 		themeToggle.getStyleClass().add("theme-toggle-button");
 		themeToggle.setMinWidth(42);
@@ -172,7 +168,9 @@ public final class AppShell extends BorderPane {
 		ThemeManager.getInstance().modeProperty().addListener((observable, oldMode, newMode) ->
 				updateThemeToggleText());
 
-		HBox right = new HBox(12, clockLabel, weatherChip, userPill, themeToggle);
+		HBox userCluster = new HBox(8, avatar, userDetails);
+		userCluster.setAlignment(Pos.CENTER_LEFT);
+		HBox right = new HBox(12, clockLabel, weatherChip, userCluster, themeToggle);
 		right.setAlignment(Pos.CENTER_RIGHT);
 		right.setMinWidth(0);
 

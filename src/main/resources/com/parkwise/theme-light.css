@@ -168,3 +168,32 @@
     -fx-background-color: #E2E8F0;
     -fx-border-color: #94A3B8;
 }
+
+/* Keep the navigation chrome consistent across display modes. */
+.root.theme-light .top-header-bar, .root.theme-light .sidebar {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #243247;
+}
+.root.theme-light .sidebar-brand, .root.theme-light .brand-name,
+.root.theme-light .nav-button, .root.theme-light .top-header-breadcrumb,
+.root.theme-light .top-header-clock, .root.theme-light .top-header-user-name {
+    -fx-text-fill: #F8FAFC;
+}
+.root.theme-light .brand-subtitle, .root.theme-light .sidebar-section-label,
+.root.theme-light .sidebar-footer {
+    -fx-text-fill: #94A3B8;
+}
+.root.theme-light .nav-button-active {
+    -fx-background-color: #1D61E7;
+    -fx-text-fill: #FFFFFF;
+}
+.root.theme-light .top-header-search {
+    -fx-background-color: #1E293B;
+    -fx-border-color: #475569;
+    -fx-text-fill: #F8FAFC;
+    -fx-prompt-text-fill: #94A3B8;
+}
+.root.theme-light .top-header-weather {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #E2E8F0;
+}

@@ -97,14 +97,16 @@ public class ParkingLotsView extends BorderPane {
 	}
 
 	public void selectCarPark(CarPark carPark) {
-		if (carPark == null || !carParkSelector.getItems().contains(carPark)
+		if (carPark == null || (carParkSelector != null && !carParkSelector.getItems().contains(carPark))
 				|| carPark.equals(selectedCarPark)) {
 			return;
 		}
 		selectedCarPark = carPark;
-		carParkSelector.setValue(carPark);
 		selectedSlotNumber = -1;
 		filter = "All";
+		if (carParkSelector != null) {
+			carParkSelector.setValue(carPark);
+		}
 		if (onCarParkChange != null) {
 			onCarParkChange.accept(carPark);
 		}
