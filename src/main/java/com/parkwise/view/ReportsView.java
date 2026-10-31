@@ -5,7 +5,7 @@ import javafx.scene.Node;
 
 public class ReportsView extends BorderPane {
 	public ReportsView() {
-		setStyle("-fx-background-color: transparent;");
+		getStyleClass().add("reports-view");
 	}
 
 	public void setContent(Node content) {

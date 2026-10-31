@@ -197,3 +197,220 @@
     -fx-background-color: #1E293B;
     -fx-text-fill: #E2E8F0;
 }
+
+/* Shared enterprise design tokens for every view and JavaFX control. */
+.root.theme-light {
+    -fx-canvas-bg: #F8FAFC;
+    -fx-surface-bg: #FFFFFF;
+    -fx-surface-border: #E2E8F0;
+    -fx-text-canvas-primary: #0F172A;
+    -fx-text-canvas-secondary: #64748B;
+    -fx-card-bg: #FFFFFF;
+    -fx-text-card-primary: #0F172A;
+    -fx-text-card-secondary: #475569;
+    -fx-base: #FFFFFF;
+    -fx-background: -fx-canvas-bg;
+    -fx-control-inner-background: -fx-surface-bg;
+    -fx-text-base-color: -fx-text-canvas-primary;
+    -fx-text-background-color: -fx-text-canvas-primary;
+    -fx-accent: #2563EB;
+    -fx-focus-color: #2563EB;
+    -fx-faint-focus-color: rgba(37, 99, 235, 0.16);
+}
+.root.theme-light .dashboard-view, .root.theme-light .reservation-view,
+.root.theme-light .reports-view, .root.theme-light .settings-view,
+.root.theme-light .parking-lots-view, .root.theme-light .predictions-view,
+.root.theme-light .monitor-view, .root.theme-light .reservation-confirmation-root,
+.root.theme-light .res-confirmation-scroll, .root.theme-light .viewport {
+    -fx-background-color: #F8FAFC;
+}
+.root.theme-light .top-header-bar, .root.theme-light .sidebar {
+    -fx-background-color: #0F172A;
+    -fx-border-color: #243247;
+}
+.root.theme-light .panel, .root.theme-light .card, .root.theme-light .res-confirmation-card {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+}
+.root.theme-light .available-slot { -fx-background-color: #ECFDF5; -fx-border-color: #A7F3D0; -fx-text-fill: #047857; }
+.root.theme-light .occupied-slot { -fx-background-color: #FEF2F2; -fx-border-color: #FECACA; -fx-text-fill: #B91C1C; }
+.root.theme-light .reserved-slot { -fx-background-color: #FFFBEB; -fx-border-color: #FDE68A; -fx-text-fill: #B45309; }
+.root.theme-light .tone-accent { -fx-text-fill: #2563EB; }
+.root.theme-light .tone-success { -fx-text-fill: #047857; }
+.root.theme-light .tone-danger { -fx-text-fill: #B91C1C; }
+.root.theme-light .tone-warning { -fx-text-fill: #B45309; }
+.root.theme-light .map-dot-alert { -fx-text-fill: #B91C1C; -fx-font-size: 12px; }
+.root.theme-light .chart-plot-background { -fx-background-color: #FFFFFF; }
+.root.theme-light .chart-vertical-grid-lines, .root.theme-light .chart-horizontal-grid-lines { -fx-stroke: #E2E8F0; }
+.root.theme-light .axis, .root.theme-light .axis-label, .root.theme-light .chart-legend-item { -fx-tick-label-fill: #64748B; -fx-text-fill: #64748B; }
+.root.theme-light .table-row-cell { -fx-background-color: #FFFFFF; -fx-text-background-color: #0F172A; }
+.root.theme-light .table-row-cell:odd { -fx-background-color: #F8FAFC; }
+.root.theme-light .table-row-cell:hover { -fx-background-color: #EFF6FF; }
+.root.theme-light .table-row-cell:selected { -fx-background-color: #DBEAFE; }
+.root.theme-light .log-level-parked { -fx-text-fill: #047857; -fx-font-weight: bold; }
+.root.theme-light .log-level-released { -fx-text-fill: #2563EB; -fx-font-weight: bold; }
+.root.theme-light .log-level-waiting { -fx-text-fill: #B45309; -fx-font-weight: bold; }
+.root.theme-light .log-level-warn { -fx-text-fill: #B91C1C; -fx-font-weight: bold; }
+.root.theme-light TextField, .root.theme-light TextArea, .root.theme-light ComboBox,
+.root.theme-light ChoiceBox, .root.theme-light DatePicker, .root.theme-light Spinner {
+    -fx-background-color: #FFFFFF;
+    -fx-control-inner-background: #FFFFFF;
+    -fx-text-fill: #0F172A;
+    -fx-prompt-text-fill: #64748B;
+    -fx-border-color: #CBD5E1;
+}
+.root.theme-light .combo-box-popup .list-view, .root.theme-light .context-menu {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+}
+.root.theme-light .combo-box-popup .list-cell { -fx-text-fill: #0F172A; }
+.root.theme-light .combo-box-popup .list-cell:hover { -fx-background-color: #EFF6FF; }
+.root.theme-light .date-picker-popup { -fx-background-color: #FFFFFF; }
+
+/* Surface-aware defaults: primary copy is always dark on light surfaces and
+   light on dark surfaces; muted copy retains at least AA contrast. */
+.root.theme-light .dashboard-view, .root.theme-light .reservation-view,
+.root.theme-light .reports-view, .root.theme-light .settings-view,
+.root.theme-light .parking-lots-view, .root.theme-light .predictions-view,
+.root.theme-light .monitor-view, .root.theme-light .reservation-confirmation-root,
+.root.theme-light .res-confirmation-scroll, .root.theme-light .viewport {
+    -fx-background-color: -fx-canvas-bg;
+}
+.root.theme-light .section-caption, .root.theme-light .page-subtitle,
+.root.theme-light .metric-caption, .root.theme-light .shell-page-description,
+.root.theme-light .preds-section-caption, .root.theme-light .res-step-subtitle,
+.root.theme-light .hero-subtitle, .root.theme-light .kpi-caption,
+.root.theme-light .overview-rate, .root.theme-light .count-label,
+.root.theme-light .lots-detail-label, .root.theme-light .res-cost-line,
+.root.theme-light .monitor-kpi-caption, .root.theme-light .settings-description {
+    -fx-text-fill: #475569;
+}
+.root.theme-light .available-slot, .root.theme-light .lots-status-available {
+    -fx-background-color: #ECFDF5; -fx-border-color: #A7F3D0; -fx-text-fill: #047857;
+}
+.root.theme-light .occupied-slot, .root.theme-light .lots-status-occupied {
+    -fx-background-color: #FEF2F2; -fx-border-color: #FECACA; -fx-text-fill: #B91C1C;
+}
+.root.theme-light .reserved-slot, .root.theme-light .lots-status-reserved {
+    -fx-background-color: #FFFBEB; -fx-border-color: #FDE68A; -fx-text-fill: #B45309;
+}
+.root.theme-light .chart, .root.theme-light .chart-plot-background { -fx-background-color: #FFFFFF; }
+.root.theme-light .chart-vertical-grid-lines, .root.theme-light .chart-horizontal-grid-lines { -fx-stroke: #CBD5E1; }
+.root.theme-light .chart-legend-item, .root.theme-light .axis { -fx-tick-label-fill: #475569; }
+.root.theme-light .axis-label { -fx-text-fill: #475569; }
+.root.theme-light .table-row-cell { -fx-text-background-color: #0F172A; }
+.root.theme-light .table-cell { -fx-text-fill: #0F172A; }
+.root.theme-light .settings-tabs .tab .tab-label { -fx-text-fill: #334155; }
+.root.theme-light .settings-tabs .tab:selected .tab-label { -fx-text-fill: #1D4ED8; }
+.root.theme-light .context-menu .menu-item .label { -fx-text-fill: #0F172A; }
+
+/* Light surfaces use the same readable form and table treatment throughout. */
+.root.theme-light .panel TextField, .root.theme-light .panel TextArea,
+.root.theme-light .panel ComboBox, .root.theme-light .panel ChoiceBox,
+.root.theme-light .panel DatePicker, .root.theme-light .panel Spinner,
+.root.theme-light .reservation-card TextField, .root.theme-light .reservation-card ComboBox,
+.root.theme-light .reservation-card DatePicker, .root.theme-light .reservation-card ChoiceBox {
+    -fx-background-color: #F8FAFC;
+    -fx-control-inner-background: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 6px;
+    -fx-text-fill: #0F172A;
+    -fx-prompt-text-fill: #64748B;
+}
+.root.theme-light .combo-box-base .arrow,
+.root.theme-light .date-picker .arrow-button .arrow { -fx-background-color: #0F172A; }
+.root.theme-light .combo-box-popup .list-view,
+.root.theme-light .date-picker-popup,
+.root.theme-light .context-menu { -fx-background-color: #FFFFFF; }
+.root.theme-light .table-view,
+.root.theme-light .reservation-table { -fx-background-color: #FFFFFF; -fx-control-inner-background: #FFFFFF; }
+.root.theme-light .table-view .column-header-background,
+.root.theme-light .table-view .column-header,
+.root.theme-light .table-view .filler,
+.root.theme-light .reservation-table .column-header-background,
+.root.theme-light .reservation-table .column-header {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+.root.theme-light .table-view .column-header .label,
+.root.theme-light .reservation-table .column-header .label {
+    -fx-text-fill: #475569;
+    -fx-font-weight: bold;
+}
+.root.theme-light .table-view .table-row-cell,
+.root.theme-light .reservation-table .table-row-cell { -fx-background-color: #FFFFFF; }
+.root.theme-light .table-view .table-row-cell:hover,
+.root.theme-light .reservation-table .table-row-cell:hover { -fx-background-color: #F8FAFC; }
+.root.theme-light .table-view .table-cell,
+.root.theme-light .reservation-table .table-cell { -fx-text-fill: #0F172A; }
+.root.theme-light .reservation-status-pill {
+    -fx-background-radius: 999px;
+    -fx-padding: 4px 9px;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.root.theme-light .reservation-status-confirmed { -fx-background-color: #ECFDF5; -fx-text-fill: #047857; }
+.root.theme-light .reservation-status-completed { -fx-background-color: #EFF6FF; -fx-text-fill: #1D4ED8; }
+.root.theme-light .reservation-status-cancelled { -fx-background-color: #FEF2F2; -fx-text-fill: #B91C1C; }
+.root.theme-light .hero-title { -fx-text-fill: #FFFFFF; }
+.root.theme-light .hero-subtitle { -fx-text-fill: #93C5FD; }
+.root.theme-light .hero-button {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #0F172A;
+    -fx-border-color: rgba(15, 23, 42, 0.16);
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-font-weight: bold;
+}
+.root.theme-light .hero-button:hover { -fx-background-color: #EFF6FF; }
+.root.theme-light .hero-button-primary {
+    -fx-background-color: #2563EB;
+    -fx-text-fill: #FFFFFF;
+    -fx-background-radius: 8px;
+    -fx-font-weight: bold;
+}
+.root.theme-light .status-chip { -fx-background-color: #16A34A; -fx-text-fill: #FFFFFF; }
+.root.theme-light .strategy-badge {
+    -fx-background-color: rgba(15, 23, 42, 0.72);
+    -fx-text-fill: #FFFFFF;
+    -fx-background-radius: 16px;
+}
+.root.theme-light .city-map {
+    -fx-background-color:
+        #EAF0F8,
+        linear-gradient(to right, transparent 47%, #FFFFFF 48%, #FFFFFF 51%, transparent 52%),
+        linear-gradient(to bottom, transparent 29%, #FFFFFF 30%, #FFFFFF 33%, transparent 34%),
+        linear-gradient(to right, transparent 74%, #FFFFFF 75%, #FFFFFF 77%, transparent 78%),
+        linear-gradient(to bottom, transparent 72%, #FFFFFF 73%, #FFFFFF 76%, transparent 77%);
+    -fx-background-insets: 0, 0, 0, 0, 0;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+}
+.root.theme-light .map-pin {
+    -fx-padding: 7px 6px;
+    -fx-background-color: rgba(255, 255, 255, 0.96);
+    -fx-background-radius: 9px;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 9px;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.14), 7, 0.18, 0, 2);
+}
+.root.theme-light .map-dot { -fx-font-size: 18px; }
+.root.theme-light .map-dot-open { -fx-text-fill: #047857; }
+.root.theme-light .map-dot-full { -fx-text-fill: #B91C1C; }
+.root.theme-light .map-label { -fx-text-fill: #0F172A; -fx-alignment: center; }
+.root.theme-light .reservation-panel TextField,
+.root.theme-light .reservation-panel ComboBox,
+.root.theme-light .reservation-panel DatePicker,
+.root.theme-light .reservation-panel ChoiceBox {
+    -fx-background-color: #F8FAFC;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-text-fill: #0F172A;
+    -fx-prompt-text-fill: #64748B;
+}
+.root.theme-light .reservation-panel .combo-box-base .arrow,
+.root.theme-light .reservation-panel .date-picker .arrow { -fx-background-color: #334155; }
+.root.theme-light .overview-progress .track { -fx-background-color: #E2E8F0; -fx-background-radius: 999px; }
+.root.theme-light .overview-progress .bar { -fx-background-color: #2563EB; -fx-background-radius: 999px; }

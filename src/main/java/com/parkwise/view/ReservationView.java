@@ -23,6 +23,8 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
@@ -73,6 +75,7 @@ public class ReservationView extends BorderPane {
 
 	private VBox wizardContent;
 	private VBox confirmationContent;
+	private ScrollPane confirmationScrollPane;
 	private VBox contentPane;
 	private VBox step1View;
 	private VBox step2View;
@@ -121,6 +124,11 @@ public class ReservationView extends BorderPane {
 		}
 		wizardContent = buildWizard();
 		confirmationContent = buildConfirmation();
+		confirmationScrollPane = new ScrollPane(confirmationContent);
+		confirmationScrollPane.setFitToWidth(true);
+		confirmationScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		confirmationScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		confirmationScrollPane.getStyleClass().add("res-confirmation-scroll");
 		setCenter(wizardContent);
 	}
 
@@ -130,6 +138,21 @@ public class ReservationView extends BorderPane {
 		if (!showingConfirmation) {
 			setCenter(wizardContent);
 		}
+	}
+
+	public void setDefaultCarPark(String carParkName) {
+		if (carParkName == null) {
+			return;
+		}
+		repository.getAllCarParks().stream()
+				.filter(park -> park.name().equalsIgnoreCase(carParkName))
+				.findFirst().ifPresent(park -> {
+					selectedCarPark = park;
+					selectedSlot = -1;
+					if (!showingConfirmation) {
+						refresh();
+					}
+				});
 	}
 
 	private VBox buildWizard() {
@@ -628,7 +651,7 @@ public class ReservationView extends BorderPane {
 
 	private void showConfirmation() {
 		showingConfirmation = true;
-		setCenter(confirmationContent);
+		setCenter(confirmationScrollPane);
 		buildConfirmationData();
 	}
 
@@ -699,14 +722,13 @@ public class ReservationView extends BorderPane {
 		confirmationCost = new Label("RM 0.00");
 		confirmationCost.getStyleClass().add("res-meta-total");
 
-		Region bookingThumbnail = new Region();
+		ImageView bookingThumbnail = new ImageView(new Image(
+				ReservationView.class.getResourceAsStream(CITY_MALL_IMAGE)));
 		bookingThumbnail.getStyleClass().add("res-confirmation-thumbnail");
-		bookingThumbnail.setUserData(CITY_MALL_IMAGE);
-		bookingThumbnail.setStyle("-fx-background-image: url(\"" + CITY_MALL_IMAGE + "\");"
-				+ "-fx-background-size: cover;");
-		bookingThumbnail.setMinHeight(120);
-		bookingThumbnail.setPrefHeight(120);
-		bookingThumbnail.setMaxWidth(Double.MAX_VALUE);
+		bookingThumbnail.setPreserveRatio(true);
+		bookingThumbnail.fitWidthProperty().bind(card.widthProperty().subtract(40));
+		bookingThumbnail.setFitHeight(281);
+		bookingThumbnail.setSmooth(true);
 
 		card.getChildren().addAll(summaryTitle, bookingThumbnail,
 				metaRow("Booking ID", confirmationBookingId),

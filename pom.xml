@@ -58,6 +58,9 @@
         <version>0.0.8</version>
         <configuration>
           <mainClass>com.parkwise.Main</mainClass>
+          <options>
+            <option>-Djavafx.cachedir=${project.build.directory}/javafx-cache</option>
+          </options>
           <launcher>SmartParkingSystem</launcher>
           <jlinkImageName>SmartParkingSystem</jlinkImageName>
           <jlinkZipName>SmartParkingSystem</jlinkZipName>

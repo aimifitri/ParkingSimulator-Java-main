@@ -396,17 +396,18 @@ public class SimulationMonitorView extends BorderPane {
 				super.updateItem(item, empty);
 				if (empty || item == null) {
 					setText(null);
-					setStyle("");
+					getStyleClass().removeAll("log-level-parked", "log-level-released", "log-level-waiting", "log-level-warn");
 				} else {
 					setText(item);
-					String style = switch (item) {
-						case "PARKED" -> "-fx-text-fill: #22C55E; -fx-font-weight: bold;";
-						case "RELEASED" -> "-fx-text-fill: #0066FF; -fx-font-weight: bold;";
-						case "WAITING" -> "-fx-text-fill: #F59E0B; -fx-font-weight: bold;";
-						case "WARN" -> "-fx-text-fill: #EF4444; -fx-font-weight: bold;";
-						default -> "-fx-text-fill: #475467;";
+					getStyleClass().removeAll("log-level-parked", "log-level-released", "log-level-waiting", "log-level-warn");
+					String levelClass = switch (item) {
+						case "PARKED" -> "log-level-parked";
+						case "RELEASED" -> "log-level-released";
+						case "WAITING" -> "log-level-waiting";
+						case "WARN" -> "log-level-warn";
+						default -> null;
 					};
-					setStyle(style);
+					if (levelClass != null) getStyleClass().add(levelClass);
 				}
 			}
 		});

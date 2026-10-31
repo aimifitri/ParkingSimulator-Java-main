@@ -49,7 +49,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.control.Separator;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.TableColumn;
@@ -422,36 +421,52 @@ public class Main extends Application implements ParkingListener {
 		VBox timingsContent = new VBox(18, timingsTitle, timingsDescription, timingBox);
 		timingsContent.getStyleClass().add("settings-section");
 
-		Label aboutTitle = new Label("ParkWise Smart Parking");
+		Label aboutTitle = new Label("ParkWise v2.4 Enterprise");
 		aboutTitle.getStyleClass().add("settings-section-title");
 		Label aboutDescription = new Label("A JavaFX parking simulation demonstrating safe concurrent allocation and reservation workflows.");
 		aboutDescription.getStyleClass().add("settings-description");
-		Label versionInfo = new Label("Application version 1.0-SNAPSHOT");
-		Label javaInfo = new Label("Java runtime " + System.getProperty("java.version", "Unknown"));
-		Label javafxInfo = new Label("JavaFX runtime " + System.getProperty("javafx.runtime.version",
-				System.getProperty("javafx.version", "21")));
+		Label versionInfo = new Label("Application version v2.4 Enterprise");
+		String javaRuntime = System.getProperty("java.version", "Unknown");
+		Label javaInfo = new Label("Java runtime " + javaRuntime
+				+ (javaRuntime.startsWith("21") ? " • Java 21 LTS" : " • Target: Java 21 LTS"));
+		String javafxRuntime = System.getProperty("javafx.runtime.version",
+				System.getProperty("javafx.version", "21"));
+		Label javafxInfo = new Label("JavaFX " + javafxRuntime + " rendering engine");
 		Label osInfo = new Label("Operating system " + System.getProperty("os.name", "Unknown") + " "
 				+ System.getProperty("os.version", ""));
 		Label architectureTitle = new Label("OS Chapter 4 architecture");
 		architectureTitle.getStyleClass().add("settings-preference-title");
-		Label architecture = new Label("The application is organized into model, service, strategy, and view layers. "
-				+ "Semaphore and mutex strategies coordinate concurrent vehicle access while repositories and reservation "
-				+ "services manage parking state and bookings.");
+		Label architecture = new Label("The simulation follows a 1:1 threading model, with one Car thread per vehicle. "
+				+ "Semaphore and mutex strategies coordinate access to spaces, and Platform.runLater synchronizes UI updates. "
+				+ "Vehicle work currently runs on individual threads rather than an ExecutorService worker pool.");
 		architecture.getStyleClass().add("settings-description");
 		architecture.setWrapText(true);
-		VBox aboutContent = new VBox(12, aboutTitle, aboutDescription, new Separator(), versionInfo, javaInfo,
-				javafxInfo, osInfo, new Separator(), architectureTitle, architecture);
+		VBox systemInfoCard = new VBox(10, versionInfo, javaInfo, javafxInfo, osInfo);
+		systemInfoCard.getStyleClass().add("settings-info-card");
+		VBox architectureCard = new VBox(8, architectureTitle, architecture);
+		architectureCard.getStyleClass().add("settings-info-card");
+		VBox aboutContent = new VBox(12, aboutTitle, aboutDescription, systemInfoCard, architectureCard);
 		aboutContent.getStyleClass().add("settings-section");
 		HBox launchActions = new HBox(16, launchFeedback, launchButton);
 		launchActions.setAlignment(Pos.CENTER_RIGHT);
 		HBox.setHgrow(launchFeedback, Priority.ALWAYS);
-		setupView = new SettingsView(systemContent, timingsContent, null, aboutContent, launchActions);
+		setupView = new SettingsView(systemContent, timingsContent, null, aboutContent, launchActions,
+				this::applyDefaultCarPark);
 		appShell.showPage(page,
 				page == AppShell.Page.SETTINGS ? "Settings" : "Dashboard",
 				page == AppShell.Page.SETTINGS
 						? "Simulation settings take effect when you launch or restart a run."
 						: "Configure and launch the parking simulation to see its live dashboard.",
 				setupView);
+	}
+
+	private void applyDefaultCarPark(String carParkName) {
+		if (dashboardView != null) {
+			dashboardView.setDefaultCarPark(carParkName);
+		}
+		if (reservationView != null) {
+			reservationView.setDefaultCarPark(carParkName);
+		}
 	}
 
 	private Integer readSpinnerValue(Spinner<Integer> spinner, int minimum, int maximum) {

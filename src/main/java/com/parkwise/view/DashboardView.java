@@ -7,6 +7,7 @@ import com.parkwise.service.CarParkRepository;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -39,6 +40,14 @@ import javafx.scene.layout.VBox;
  * triggers user actions through callbacks supplied by {@link Main}.
  */
 public class DashboardView extends BorderPane {
+	private static String toneClass(String tone) {
+		return switch (tone.toUpperCase(Locale.ROOT)) {
+			case "#10B981", "#22C55E" -> "tone-success";
+			case "#EF4444" -> "tone-danger";
+			case "#F59E0B" -> "tone-warning";
+			default -> "tone-accent";
+		};
+	}
 	public static final String CITY_MALL_IMAGE = "/public/images/city-mall.jpg";
 	public static final String CENTRAL_STATION_IMAGE = "/public/images/central-station.jpg";
 	public static final String STADIUM_WEST_IMAGE = "/public/images/stadium-west.jpg";
@@ -71,6 +80,7 @@ public class DashboardView extends BorderPane {
 	private Label gridOccValue;
 	private Label gridAvailValue;
 	private Label gridResValue;
+	private ComboBox<CarPark> quickReservationCarParkBox;
 	public DashboardView(CarParkRepository repository,
 			Supplier<Parking> parkingSupplier,
 			Supplier<String> statusText,
@@ -114,6 +124,15 @@ public class DashboardView extends BorderPane {
 
 	public void setParking(Parking parking) {
 		// The dashboard reads live state via the supplier; no cached field is required.
+	}
+
+	public void setDefaultCarPark(String carParkName) {
+		if (quickReservationCarParkBox == null || carParkName == null) {
+			return;
+		}
+		repository.getAllCarParks().stream()
+				.filter(park -> park.name().equalsIgnoreCase(carParkName))
+				.findFirst().ifPresent(quickReservationCarParkBox::setValue);
 	}
 
 	public void refresh() {
@@ -173,6 +192,8 @@ public class DashboardView extends BorderPane {
 		bar.getStyleClass().add("hero-banner");
 		bar.setPadding(new Insets(24, 28, 22, 28));
 		bar.setAlignment(Pos.CENTER_LEFT);
+		bar.setMinHeight(118);
+		bar.setPrefHeight(118);
 
 		VBox text = new VBox(6);
 		Label title = new Label("Smarter Parking for a Smarter City");
@@ -248,7 +269,7 @@ public class DashboardView extends BorderPane {
 		HBox top = new HBox(8);
 		Label iconLabel = new Label(icon);
 		iconLabel.getStyleClass().add("kpi-icon");
-		iconLabel.setStyle("-fx-text-fill: " + tone + ";");
+		iconLabel.getStyleClass().add(toneClass(tone));
 		Label titleLabel = new Label(title);
 		titleLabel.getStyleClass().add("kpi-label");
 		Region sp = new Region();
@@ -372,7 +393,7 @@ public class DashboardView extends BorderPane {
 		chip.getStyleClass().add("count-chip");
 		Label value = new Label(String.valueOf(count));
 		value.getStyleClass().add("count-value");
-		value.setStyle("-fx-text-fill: " + tone + ";");
+		value.getStyleClass().add(toneClass(tone));
 		Label text = new Label(label);
 		text.getStyleClass().add("count-label");
 		chip.getChildren().addAll(value, text);
@@ -400,26 +421,48 @@ public class DashboardView extends BorderPane {
 			map.getChildren().add(buildMapPin(map, park, x));
 			x += 1;
 		}
+		map.widthProperty().addListener((observable, oldWidth, newWidth) -> layoutMapPins(map));
+		layoutMapPins(map);
 
 		section.getChildren().addAll(header, map);
 		return section;
 	}
 
 	private Node buildMapPin(Pane map, CarPark park, int index) {
-		double cx = 60 + index * 150;
-		double cy = 100;
 		VBox pin = new VBox(2);
 		pin.getStyleClass().add("map-pin");
 		pin.setAlignment(Pos.CENTER);
+		pin.setPrefWidth(220);
+		pin.setMaxWidth(220);
 		Label dot = new Label("\u25CF");
 		dot.getStyleClass().add("map-dot");
-		dot.setStyle("-fx-text-fill: #EF4444; -fx-font-size: 12px;");
+		dot.getStyleClass().add(park.availableCount() > 0 ? "map-dot-open" : "map-dot-full");
 		Label label = new Label(park.name() + " (" + park.availableCount() + "/" + park.totalCapacity() + ")");
 		label.getStyleClass().add("map-label");
+		label.setWrapText(true);
+		label.setMaxWidth(190);
 		pin.getChildren().addAll(dot, label);
-		pin.setLayoutX(cx - 60);
-		pin.setLayoutY(cy - 26);
+		pin.boundsInLocalProperty().addListener((observable, oldBounds, newBounds) -> layoutMapPins(map));
 		return pin;
+	}
+
+	private void layoutMapPins(Pane map) {
+		int count = map.getChildren().size();
+		if (count == 0 || map.getWidth() <= 0) {
+			return;
+		}
+		double segmentWidth = map.getWidth() / count;
+		for (int index = 0; index < count; index++) {
+			Node pin = map.getChildren().get(index);
+			double pinWidth = Math.max(110, Math.min(220, segmentWidth - 16));
+			if (pin instanceof javafx.scene.layout.Region region) {
+				region.setMinWidth(0);
+				region.setPrefWidth(pinWidth);
+				region.setMaxWidth(pinWidth);
+			}
+			pin.setLayoutX(segmentWidth * index + (segmentWidth - pinWidth) / 2);
+			pin.setLayoutY(map.getHeight() * 0.43);
+		}
 	}
 
 	private VBox buildQuickReservationPanel() {
@@ -435,8 +478,8 @@ public class DashboardView extends BorderPane {
 		HBox.setHgrow(sp, Priority.ALWAYS);
 		header.getChildren().addAll(title, sp);
 
-		ComboBox<CarPark> carParkBox = new ComboBox<>(FXCollections.observableArrayList(repository.getAllCarParks()));
-		carParkBox.setConverter(new javafx.util.StringConverter<>() {
+		quickReservationCarParkBox = new ComboBox<>(FXCollections.observableArrayList(repository.getAllCarParks()));
+		quickReservationCarParkBox.setConverter(new javafx.util.StringConverter<>() {
 			@Override
 			public String toString(CarPark p) {
 				return p == null ? "" : p.name();
@@ -447,9 +490,9 @@ public class DashboardView extends BorderPane {
 				return null;
 			}
 		});
-		carParkBox.setValue(repository.getActiveLot());
-		carParkBox.setPromptText("Select Car Park");
-		carParkBox.setMaxWidth(Double.MAX_VALUE);
+		quickReservationCarParkBox.setValue(repository.getActiveLot());
+		quickReservationCarParkBox.setPromptText("Select Car Park");
+		quickReservationCarParkBox.setMaxWidth(Double.MAX_VALUE);
 
 		DatePicker datePicker = new DatePicker(LocalDate.now());
 		datePicker.setPromptText("Date");
@@ -473,7 +516,7 @@ public class DashboardView extends BorderPane {
 		findButton.setOnAction(e -> onFindAvailableSpaces.run());
 
 		panel.getChildren().addAll(header,
-				new Label("Select Car Park"), carParkBox,
+				new Label("Select Car Park"), quickReservationCarParkBox,
 				new Label("Date"), datePicker,
 				new Label("Start Time"), timeBox,
 				new Label("Duration"), durationBox,

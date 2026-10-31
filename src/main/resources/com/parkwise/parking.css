@@ -1,6 +1,22 @@
 .root {
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-background-color: #F4F6F9;
+    -fx-canvas-bg: #0B132B;
+    -fx-surface-bg: #1C2541;
+    -fx-surface-border: #2A3A5E;
+    -fx-text-canvas-primary: #F8FAFC;
+    -fx-text-canvas-secondary: #94A3B8;
+    -fx-card-bg: #1C2541;
+    -fx-text-card-primary: #F8FAFC;
+    -fx-text-card-secondary: #CBD5E1;
+    -fx-background-color: -fx-canvas-bg;
+    -fx-base: #1C2541;
+    -fx-background: -fx-canvas-bg;
+    -fx-control-inner-background: -fx-surface-bg;
+    -fx-text-base-color: -fx-text-canvas-primary;
+    -fx-text-background-color: -fx-text-canvas-primary;
+    -fx-accent: #3B82F6;
+    -fx-focus-color: #3B82F6;
+    -fx-faint-focus-color: rgba(59, 130, 246, 0.18);
 }
 
 .app-shell, .dashboard-body {
@@ -570,17 +586,17 @@
 
 .available-slot {
     -fx-background-color: #ECFDF5;
-    -fx-border-color: #22C55E;
+    -fx-border-color: #A7F3D0;
 }
 
 .occupied-slot {
     -fx-background-color: #FEF2F2;
-    -fx-border-color: #EF4444;
+    -fx-border-color: #FECACA;
 }
 
 .reserved-slot {
     -fx-background-color: #FFFBEB;
-    -fx-border-color: #F59E0B;
+    -fx-border-color: #FDE68A;
 }
 
 .selected-slot {
@@ -591,19 +607,19 @@
 }
 
 .slot-number {
-    -fx-text-fill: #667085;
+    -fx-text-fill: #065F46;
     -fx-font-size: 9px;
     -fx-font-weight: bold;
 }
 
 .slot-status {
-    -fx-text-fill: #22C55E;
+    -fx-text-fill: #065F46;
     -fx-font-size: 8px;
     -fx-font-weight: bold;
 }
 
-.occupied-slot .slot-status { -fx-text-fill: #EF4444; }
-.reserved-slot .slot-status { -fx-text-fill: #F59E0B; }
+.occupied-slot .slot-number, .occupied-slot .slot-status { -fx-text-fill: #991B1B; }
+.reserved-slot .slot-number, .reserved-slot .slot-status { -fx-text-fill: #92400E; }
 .selected-slot .slot-number, .selected-slot .slot-status, .selected-slot .car-name {
     -fx-text-fill: white;
 }
@@ -988,8 +1004,14 @@
     -fx-background-color: #F4F6F9;
 }
 .hero-banner {
-    -fx-background-color: linear-gradient(to right, #0B132B, #162542);
-    -fx-padding: 24px 28px 22px 28px;
+    -fx-background-color: linear-gradient(to right, #0F172A, #1D61E7);
+    -fx-background-image: url('/public/images/skyline-banner.jpg');
+    -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 24px;
 }
 .hero-title {
     -fx-text-fill: #FFFFFF;
@@ -2001,13 +2023,22 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 240, 255, 0.12), 14, 0, 0, 4);
 }
 .hero-banner {
-    -fx-background-color:
-        linear-gradient(to right, rgba(2, 6, 23, 0.92), rgba(15, 23, 42, 0.58), transparent),
-        url("/public/images/skyline-banner.jpg"),
-        #0F172A;
+    -fx-background-color: linear-gradient(to right, #0F172A, #1D61E7);
+    -fx-background-image: url('/public/images/skyline-banner.jpg');
     -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 24px;
 }
-.hero-title { -fx-text-fill: white; -fx-font-size: 24px; -fx-font-weight: bold; }
+.hero-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.72), 4, 0.35, 0, 1);
+}
+.hero-subtitle { -fx-text-fill: #93C5FD; }
 .hero-subtitle, .kpi-caption, .overview-rate, .count-label, .lots-detail-label,
 .preds-recommendation-meta-text, .res-carpark-location, .res-cost-line {
     -fx-text-fill: #94A3B8;
@@ -2187,10 +2218,14 @@
     -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.09), 16, 0, 0, 4);
 }
 .hero-banner {
-    -fx-background-color:
-        linear-gradient(to right, rgba(15, 23, 42, 0.94), rgba(29, 97, 231, 0.50), transparent),
-        url("/public/images/skyline-banner.jpg"), #0F172A;
+    -fx-background-color: linear-gradient(to right, #0F172A, #1D61E7);
+    -fx-background-image: url('/public/images/skyline-banner.jpg');
     -fx-background-size: cover;
+    -fx-background-position: center center;
+    -fx-background-repeat: no-repeat;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-padding: 24px;
 }
 .hero-button-primary, .find-button, .primary-button {
     -fx-background-color: #1D61E7;
@@ -2352,7 +2387,6 @@
 .settings-view.compact-mode .settings-section {
     -fx-spacing: 8px;
 }
-
 .monitor-control-bar {
     -fx-background-color: #FFFFFF;
     -fx-border-color: transparent transparent #E2E8F0 transparent;
@@ -2446,3 +2480,200 @@
     -fx-border-color: transparent transparent #E2E8F0 transparent;
     -fx-padding: 8px 10px;
 }
+.settings-info-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-padding: 18px;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.05), 14, 0, 0, 4);
+}
+
+/* Dark mode tokens and JavaFX controls */
+.root.theme-dark {
+    -fx-canvas-bg: #0B132B;
+    -fx-surface-bg: #1C2541;
+    -fx-surface-border: #2A3A5E;
+    -fx-text-canvas-primary: #F8FAFC;
+    -fx-text-canvas-secondary: #94A3B8;
+    -fx-card-bg: #1C2541;
+    -fx-text-card-primary: #F8FAFC;
+    -fx-text-card-secondary: #CBD5E1;
+    -fx-base: -fx-surface-bg;
+    -fx-background: -fx-canvas-bg;
+    -fx-control-inner-background: -fx-surface-bg;
+    -fx-text-base-color: -fx-text-canvas-primary;
+    -fx-text-background-color: -fx-text-canvas-primary;
+    -fx-accent: #3B82F6;
+    -fx-focus-color: #3B82F6;
+    -fx-faint-focus-color: rgba(59, 130, 246, 0.18);
+    -fx-background-color: -fx-canvas-bg;
+}
+.root.theme-dark .dashboard-view, .root.theme-dark .reservation-view,
+.root.theme-dark .reports-view, .root.theme-dark .settings-view,
+.root.theme-dark .parking-lots-view, .root.theme-dark .predictions-view,
+.root.theme-dark .monitor-view, .root.theme-dark .reservation-confirmation-root,
+.root.theme-dark .res-confirmation-scroll, .root.theme-dark .viewport {
+    -fx-background-color: #0B132B;
+}
+.root.theme-dark .top-header-bar, .root.theme-dark .sidebar {
+    -fx-background-color: #0A0F1D;
+    -fx-border-color: #2A3A5E;
+}
+.root.theme-dark .panel, .root.theme-dark .card, .root.theme-dark .res-confirmation-card {
+    -fx-background-color: #1C2541;
+    -fx-border-color: #2A3A5E;
+}
+.root.theme-dark .available-slot { -fx-background-color: #064E3B; -fx-border-color: #059669; -fx-text-fill: #6EE7B7; }
+.root.theme-dark .occupied-slot { -fx-background-color: #7F1D1D; -fx-border-color: #DC2626; -fx-text-fill: #FCA5A5; }
+.root.theme-dark .reserved-slot { -fx-background-color: #78350F; -fx-border-color: #D97706; -fx-text-fill: #FDE68A; }
+.root.theme-dark .available-slot .slot-number, .root.theme-dark .available-slot .slot-status { -fx-text-fill: #6EE7B7; }
+.root.theme-dark .occupied-slot .slot-number, .root.theme-dark .occupied-slot .slot-status { -fx-text-fill: #FCA5A5; }
+.root.theme-dark .reserved-slot .slot-number, .root.theme-dark .reserved-slot .slot-status { -fx-text-fill: #FDE68A; }
+.root.theme-dark .lots-status-available { -fx-background-color: #064E3B; -fx-text-fill: #6EE7B7; }
+.root.theme-dark .lots-status-occupied { -fx-background-color: #7F1D1D; -fx-text-fill: #FCA5A5; }
+.root.theme-dark .lots-status-reserved { -fx-background-color: #78350F; -fx-text-fill: #FDE68A; }
+.root.theme-dark .selected-slot { -fx-background-color: #3B82F6; -fx-border-color: #2563EB; -fx-text-fill: #FFFFFF; }
+.root.theme-dark .tone-accent { -fx-text-fill: #3B82F6; }
+.root.theme-dark .tone-success { -fx-text-fill: #6EE7B7; }
+.root.theme-dark .tone-danger { -fx-text-fill: #FCA5A5; }
+.root.theme-dark .tone-warning { -fx-text-fill: #FDE68A; }
+.root.theme-dark .map-dot-alert { -fx-text-fill: #FCA5A5; -fx-font-size: 12px; }
+.root.theme-dark .chart-plot-background { -fx-background-color: #1C2541; }
+.root.theme-dark .chart-vertical-grid-lines, .root.theme-dark .chart-horizontal-grid-lines { -fx-stroke: #2A3A5E; }
+.root.theme-dark .axis, .root.theme-dark .axis-label, .root.theme-dark .chart-legend-item { -fx-tick-label-fill: #94A3B8; -fx-text-fill: #94A3B8; }
+.root.theme-dark .table-view, .root.theme-dark .table-row-cell { -fx-background-color: #1C2541; -fx-text-background-color: #F8FAFC; }
+.root.theme-dark .table-row-cell:odd { -fx-background-color: #17213A; }
+.root.theme-dark .table-row-cell:hover { -fx-background-color: #243454; }
+.root.theme-dark .table-row-cell:selected { -fx-background-color: #1D4ED8; }
+.root.theme-dark .table-cell { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .log-level-parked { -fx-text-fill: #6EE7B7; -fx-font-weight: bold; }
+.root.theme-dark .log-level-released { -fx-text-fill: #93C5FD; -fx-font-weight: bold; }
+.root.theme-dark .log-level-waiting { -fx-text-fill: #FDE68A; -fx-font-weight: bold; }
+.root.theme-dark .log-level-warn { -fx-text-fill: #FCA5A5; -fx-font-weight: bold; }
+.root.theme-dark TextField, .root.theme-dark TextArea, .root.theme-dark ComboBox,
+.root.theme-dark ChoiceBox, .root.theme-dark DatePicker, .root.theme-dark Spinner {
+    -fx-background-color: #1C2541;
+    -fx-control-inner-background: #1C2541;
+    -fx-text-fill: #F8FAFC;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-border-color: #2A3A5E;
+}
+.root.theme-dark .combo-box-popup .list-view, .root.theme-dark .context-menu,
+.root.theme-dark .date-picker-popup { -fx-background-color: #1C2541; -fx-border-color: #2A3A5E; }
+.root.theme-dark .combo-box-popup .list-cell { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .combo-box-popup .list-cell:hover { -fx-background-color: #243454; }
+
+/* Resolve JavaFX text inheritance by theme and actual surface. */
+.root.theme-dark Label {
+    -fx-text-fill: #F8FAFC;
+}
+.root.theme-dark .top-header-bar, .root.theme-dark .sidebar,
+.root.theme-dark .app-shell, .root.theme-dark .dashboard-body,
+.root.theme-dark .dashboard-root, .root.theme-dark .dashboard-scroll,
+.root.theme-dark .parking-lots-root, .root.theme-dark .predictions-page-root,
+.root.theme-dark .predictions-scroll-wrapper, .root.theme-dark .monitor-root,
+.root.theme-dark .monitor-scroll-wrapper, .root.theme-dark .reports-page-content,
+.root.theme-dark .reports-page-scroll, .root.theme-dark .reservations-page-content,
+.root.theme-dark .reservation-page-content, .root.theme-dark .settings-view,
+.root.theme-dark .settings-page-content, .root.theme-dark .settings-tab-scroll,
+.root.theme-dark .settings-tab-panel, .root.theme-dark .settings-tabs > .tab-content-area,
+.root.theme-dark .reservation-confirmation-root, .root.theme-dark .res-confirmation-scroll,
+.root.theme-dark .viewport {
+    -fx-background-color: -fx-canvas-bg;
+}
+.root.theme-dark .top-header-bar, .root.theme-dark .sidebar {
+    -fx-background-color: #0A0F1D;
+    -fx-border-color: #2A3A5E;
+}
+.root.theme-dark .dashboard-kpi-card, .root.theme-dark .kpi-card,
+.root.theme-dark .metric-card, .root.theme-dark .panel,
+.root.theme-dark .overview-card, .root.theme-dark .reservation-panel,
+.root.theme-dark .map-section, .root.theme-dark .grid-card,
+.root.theme-dark .activity-entry, .root.theme-dark .reservation-card,
+.root.theme-dark .reservation-page-card, .root.theme-dark .res-step-card,
+.root.theme-dark .res-cost-card, .root.theme-dark .res-confirmation-card,
+.root.theme-dark .lots-details-card, .root.theme-dark .lots-pill-card,
+.root.theme-dark .preds-metric-pill, .root.theme-dark .preds-recommendation-card,
+.root.theme-dark .preds-forecast-chart, .root.theme-dark .historical-prediction-panel,
+.root.theme-dark .monitor-kpi-card, .root.theme-dark .monitor-health-chip,
+.root.theme-dark .monitor-log-section, .root.theme-dark .reports-card,
+.root.theme-dark .settings-info-card, .root.theme-dark .settings-section,
+.root.theme-dark .settings-display-content, .root.theme-dark .settings-preference-row {
+    -fx-background-color: -fx-surface-bg;
+    -fx-border-color: -fx-surface-border;
+}
+.root.theme-dark .shell-page-title, .root.theme-dark .section-title,
+.root.theme-dark .page-title, .root.theme-dark .metric-title,
+.root.theme-dark .lots-grid-title, .root.theme-dark .preds-section-title,
+.root.theme-dark .res-step-title, .root.theme-dark .res-section-title,
+.root.theme-dark .monitor-section-title, .root.theme-dark .settings-section-title,
+.root.theme-dark .settings-preference-title, .root.theme-dark .overview-name,
+.root.theme-dark .kpi-value, .root.theme-dark .count-value,
+.root.theme-dark .lots-details-space-id, .root.theme-dark .preds-recommendation-name,
+.root.theme-dark .preds-metric-value, .root.theme-dark .res-carpark-name,
+.root.theme-dark .res-meta-value, .root.theme-dark .res-meta-value-node,
+.root.theme-dark .monitor-kpi-value, .root.theme-dark .metric-value,
+.root.theme-dark .reservation-title, .root.theme-dark .reservation-count,
+.root.theme-dark .reservation-empty-title {
+    -fx-text-fill: #F8FAFC;
+}
+.root.theme-dark .shell-page-description, .root.theme-dark .section-caption,
+.root.theme-dark .page-subtitle, .root.theme-dark .metric-caption,
+.root.theme-dark .lots-grid-caption, .root.theme-dark .preds-section-caption,
+.root.theme-dark .res-step-subtitle, .root.theme-dark .hero-subtitle,
+.root.theme-dark .kpi-caption, .root.theme-dark .overview-rate,
+.root.theme-dark .count-label, .root.theme-dark .lots-detail-label,
+.root.theme-dark .preds-recommendation-meta-text, .root.theme-dark .res-cost-line,
+.root.theme-dark .monitor-kpi-caption, .root.theme-dark .monitor-kpi-title-small,
+.root.theme-dark .monitor-control-label, .root.theme-dark .monitor-health-name,
+.root.theme-dark .settings-description, .root.theme-dark .reservation-hint,
+.root.theme-dark .reservation-subtitle, .root.theme-dark .reservation-brand-caption,
+.root.theme-dark .reservation-row-interval, .root.theme-dark .field-label {
+    -fx-text-fill: #CBD5E1;
+}
+.root.theme-dark .top-header-breadcrumb, .root.theme-dark .top-header-clock,
+.root.theme-dark .top-header-user-name, .root.theme-dark .top-header-weather,
+.root.theme-dark .top-header-user { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .nav-button, .root.theme-dark .sidebar-brand,
+.root.theme-dark .brand-name { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .brand-subtitle, .root.theme-dark .sidebar-section-label,
+.root.theme-dark .sidebar-footer { -fx-text-fill: #CBD5E1; }
+.root.theme-dark .nav-button-active { -fx-background-color: #2563EB; -fx-text-fill: #FFFFFF; }
+.root.theme-dark .tone-accent { -fx-text-fill: #93C5FD; }
+.root.theme-dark .tone-success { -fx-text-fill: #6EE7B7; }
+.root.theme-dark .tone-danger { -fx-text-fill: #FCA5A5; }
+.root.theme-dark .tone-warning { -fx-text-fill: #FDE68A; }
+.root.theme-dark .chart, .root.theme-dark .chart-plot-background { -fx-background-color: -fx-surface-bg; }
+.root.theme-dark .chart-vertical-grid-lines, .root.theme-dark .chart-horizontal-grid-lines { -fx-stroke: #405174; }
+.root.theme-dark .chart-legend-item, .root.theme-dark .axis { -fx-tick-label-fill: #CBD5E1; }
+.root.theme-dark .axis-label { -fx-text-fill: #CBD5E1; }
+.root.theme-dark .activity-log .list-cell, .root.theme-dark .reservation-page-list .list-cell {
+    -fx-background-color: -fx-surface-bg; -fx-text-fill: #F8FAFC;
+}
+.root.theme-dark .table-row-cell { -fx-text-background-color: #F8FAFC; }
+.root.theme-dark .settings-tabs .tab .tab-label { -fx-text-fill: #CBD5E1; }
+.root.theme-dark .settings-tabs .tab:selected .tab-label { -fx-text-fill: #FFFFFF; }
+.root.theme-dark .text-field, .root.theme-dark .spinner, .root.theme-dark .combo-box,
+.root.theme-dark .list-view, .root.theme-dark TextField, .root.theme-dark TextArea,
+.root.theme-dark ComboBox, .root.theme-dark ChoiceBox, .root.theme-dark DatePicker,
+.root.theme-dark Spinner {
+    -fx-background-color: -fx-surface-bg;
+    -fx-control-inner-background: -fx-surface-bg;
+    -fx-text-fill: #F8FAFC;
+    -fx-prompt-text-fill: #CBD5E1;
+    -fx-border-color: -fx-surface-border;
+}
+.root.theme-dark .text-input, .root.theme-dark .combo-box-base .list-cell,
+.root.theme-dark .date-picker .text-field { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .text-input:focused, .root.theme-dark .combo-box:focused,
+.root.theme-dark .date-picker:focused { -fx-border-color: #60A5FA; }
+.root.theme-dark .context-menu, .root.theme-dark .combo-box-popup .list-view,
+.root.theme-dark .date-picker-popup, .root.theme-dark .date-picker-popup .month-year-pane {
+    -fx-background-color: -fx-surface-bg; -fx-border-color: -fx-surface-border;
+}
+.root.theme-dark .combo-box-popup .list-cell { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .combo-box-popup .list-cell:hover { -fx-background-color: #2A3A5E; }
+.root.theme-dark .context-menu .menu-item .label { -fx-text-fill: #F8FAFC; }
+.root.theme-dark .hero-title { -fx-text-fill: #FFFFFF; }
+.root.theme-dark .hero-subtitle { -fx-text-fill: #93C5FD; }

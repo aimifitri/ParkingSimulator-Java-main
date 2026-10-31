@@ -45,6 +45,14 @@ import javafx.scene.layout.VBox;
  * actual curve is recorded from live {@link Parking} model events.
  */
 public class PredictionsView extends BorderPane {
+	private static String toneClass(String tone) {
+		return switch (tone.toUpperCase(Locale.ROOT)) {
+			case "#22C55E", "#10B981" -> "tone-success";
+			case "#EF4444" -> "tone-danger";
+			case "#F59E0B" -> "tone-warning";
+			default -> "tone-accent";
+		};
+	}
 	private final CarParkRepository repository;
 	private final Supplier<Parking> parkingSupplier;
 	private final Supplier<Integer> capacitySupplier;
@@ -408,8 +416,7 @@ public class PredictionsView extends BorderPane {
 		Label t = new Label(title);
 		t.getStyleClass().add("preds-metric-title");
 		Label v = new Label(value);
-		v.getStyleClass().add("preds-metric-value");
-		v.setStyle("-fx-text-fill: " + tone + "; -fx-font-weight: bold;");
+		v.getStyleClass().addAll("preds-metric-value", toneClass(tone));
 		pill.getChildren().addAll(t, v);
 		return v;
 	}
