@@ -20,6 +20,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -67,6 +68,12 @@ public class ReservationView extends BorderPane {
 
 	private VBox wizardContent;
 	private VBox confirmationContent;
+	private VBox contentPane;
+	private VBox step1View;
+	private VBox step2View;
+	private VBox step3View;
+	private Region stepConnector1;
+	private Region stepConnector2;
 
 	private Label step1Active, step2Active, step3Active;
 	private Label step1Label, step2Label, step3Label;
@@ -120,27 +127,36 @@ public class ReservationView extends BorderPane {
 		return root;
 	}
 
+	public void goToStep(int step) {
+		if (step < 1 || step > 3) {
+			return;
+		}
+		showingConfirmation = false;
+		wizardStep = step;
+		refresh();
+	}
+
 	private HBox buildStepIndicator() {
 		HBox bar = new HBox(0);
 		bar.getStyleClass().add("reservation-step-indicator");
 		bar.setPadding(new Insets(18, 26, 10, 26));
 
-		step1Active = stepChip("1", true);
-		step2Active = stepChip("2", false);
-		step3Active = stepChip("3", false);
+		step1Active = stepChip("1", wizardStep == 1);
+		step2Active = stepChip("2", wizardStep == 2);
+		step3Active = stepChip("3", wizardStep == 3);
 
-		step1Label = stepText("Select Car Park", true);
-		step2Label = stepText("Choose Space", false);
-		step3Label = stepText("Date & Time", false);
+		step1Label = stepText("Select Car Park", wizardStep == 1);
+		step2Label = stepText("Choose Space", wizardStep == 2);
+		step3Label = stepText("Date & Time", wizardStep == 3);
 
 		HBox s1 = stepBlock(step1Active, step1Label);
 		HBox s2 = stepBlock(step2Active, step2Label);
 		HBox s3 = stepBlock(step3Active, step3Label);
 
-		Region c1 = connector(false);
-		Region c2 = connector(false);
+		stepConnector1 = connector(wizardStep >= 2);
+		stepConnector2 = connector(wizardStep >= 3);
 
-		bar.getChildren().addAll(s1, c1, s2, c2, s3);
+		bar.getChildren().addAll(s1, stepConnector1, s2, stepConnector2, s3);
 		HBox.setHgrow(s1, Priority.ALWAYS);
 		HBox.setHgrow(s2, Priority.ALWAYS);
 		HBox.setHgrow(s3, Priority.ALWAYS);
@@ -184,16 +200,20 @@ public class ReservationView extends BorderPane {
 	}
 
 	private VBox buildStepContent() {
-		VBox content = new VBox(16);
-		content.getStyleClass().add("res-step-content");
-		content.setPadding(new Insets(0, 26, 26, 26));
+		contentPane = new VBox(16);
+		contentPane.getStyleClass().add("res-step-content");
+		contentPane.setPadding(new Insets(0, 26, 26, 26));
+
+		step1View = buildStep1();
+		step2View = buildStep2();
+		step3View = buildStep3();
 
 		switch (wizardStep) {
-			case 1 -> content.getChildren().add(buildStep1());
-			case 2 -> content.getChildren().add(buildStep2());
-			case 3 -> content.getChildren().add(buildStep3());
+			case 1 -> contentPane.getChildren().setAll(step1View);
+			case 2 -> contentPane.getChildren().setAll(step2View);
+			case 3 -> contentPane.getChildren().setAll(step3View);
 		}
-		return content;
+		return contentPane;
 	}
 
 	private VBox buildStep1() {
@@ -227,8 +247,7 @@ public class ReservationView extends BorderPane {
 				return;
 			}
 			step1Feedback.setText("");
-			wizardStep = 2;
-			refresh();
+			goToStep(2);
 		});
 
 		VBox actions = new VBox(10, step1Next);
@@ -304,19 +323,27 @@ public class ReservationView extends BorderPane {
 		spaceGrid.setPadding(new Insets(0));
 		buildSpaceTiles();
 
+		ScrollPane spaceScrollPane = new ScrollPane(spaceGrid);
+		spaceScrollPane.setFitToWidth(true);
+		spaceScrollPane.setPrefHeight(400);
+		spaceScrollPane.setMaxHeight(400);
+		spaceScrollPane.setMinHeight(0);
+		spaceScrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+		spaceScrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+		spaceScrollPane.getStyleClass().add("res-space-scroll");
+
 		step2Feedback = new Label();
 		step2Feedback.getStyleClass().add("res-feedback");
 		step2Feedback.setWrapText(true);
 
 		HBox actions = new HBox(10);
 		actions.getStyleClass().add("res-step-actions");
-		Button back1 = new Button("\u2190 Back");
+		Button back1 = new Button("Back");
 		back1.getStyleClass().add("res-secondary-button");
 		back1.setOnAction(e -> {
-			wizardStep = 1;
-			refresh();
+			goToStep(1);
 		});
-		step2Next = new Button("Next \u2192");
+		step2Next = new Button("Continue to Date & Time \u2192");
 		step2Next.getStyleClass().add("res-primary-button");
 		step2Next.setDisable(selectedSlot == -1);
 		step2Next.setOnAction(e -> {
@@ -326,13 +353,13 @@ public class ReservationView extends BorderPane {
 				return;
 			}
 			step2Feedback.setText("");
-			wizardStep = 3;
-			refresh();
+			goToStep(3);
 		});
 		actions.getChildren().addAll(back1, new Region(), step2Next);
 		HBox.setHgrow(actions.getChildren().get(1), Priority.ALWAYS);
+		actions.setAlignment(Pos.CENTER_RIGHT);
 
-		card.getChildren().addAll(title, subtitle, legend, spaceGrid, step2Feedback, actions);
+		card.getChildren().addAll(title, subtitle, legend, spaceScrollPane, step2Feedback, actions);
 		return card;
 	}
 
@@ -369,6 +396,9 @@ public class ReservationView extends BorderPane {
 			tile.setOnMouseClicked(e -> {
 				if (available) {
 					selectedSlot = currentSlot;
+					if (step2Next != null) {
+						step2Next.setDisable(false);
+					}
 					buildSpaceTiles();
 				}
 			});
@@ -462,8 +492,7 @@ public class ReservationView extends BorderPane {
 		Button back2 = new Button("\u2190 Back");
 		back2.getStyleClass().add("res-secondary-button");
 		back2.setOnAction(e -> {
-			wizardStep = 2;
-			refresh();
+			goToStep(2);
 		});
 		actions.getChildren().addAll(back2, new Region(), confirmPayButton);
 		HBox.setHgrow(actions.getChildren().get(1), Priority.ALWAYS);
