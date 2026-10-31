@@ -50,10 +50,14 @@ import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Instant;
 import java.time.DayOfWeek;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +77,11 @@ public class Main extends Application implements ParkingListener {
 	private enum SimulationState { IDLE, RUNNING, STOPPED }
 
 	private AppShell appShell;
+	private final CarParkRepository carParkRepository = new CarParkRepository();
+	private DashboardView dashboardView;
+	private ParkingLotsView parkingLotsView;
+	private ReservationView reservationView;
+	private final java.util.concurrent.atomic.AtomicInteger bookingSequence = new java.util.concurrent.atomic.AtomicInteger(0);
 	private Node setupView;
 	private Button launchButton;
 	private Label launchFeedback;
@@ -198,6 +207,34 @@ public class Main extends Application implements ParkingListener {
 		}
 		Parking.configureLogging();
 		appShell = new AppShell(this::navigateTo);
+		dashboardView = new DashboardView(carParkRepository,
+				() -> parking,
+				() -> switch (simulationState) {
+					case RUNNING -> "SIMULATION LIVE";
+					case STOPPED -> "STOPPED";
+					default -> "IDLE";
+				},
+				() -> syncStrategy == 1 ? "SEMAPHORE" : "MUTEX",
+				activityEntries,
+				this::spawnVehicleOnTheFly,
+				() -> navigateTo(AppShell.Page.SETTINGS),
+				this::restartSimulation,
+				() -> navigateTo(AppShell.Page.PARKING_LOTS),
+				() -> navigateTo(AppShell.Page.RESERVATIONS));
+		parkingLotsView = new ParkingLotsView(carParkRepository,
+				() -> parking,
+				slotNumber -> {
+					showReservations(slotNumber);
+					navigateTo(AppShell.Page.RESERVATIONS);
+				},
+				park -> {
+					// Car park selection change; the view refreshes itself.
+				});
+		reservationView = new ReservationView(carParkRepository,
+				() -> parking,
+				data -> confirmReservation(data),
+				() -> navigateTo(AppShell.Page.RESERVATIONS),
+				() -> navigateTo(AppShell.Page.DASHBOARD));
 		configureAnalyticsPanel();
 		activityEntries.addListener((ListChangeListener<String>) change -> {
 			refreshDashboardActivityEntries();
@@ -364,8 +401,8 @@ public class Main extends Application implements ParkingListener {
 				if (!simulationLaunched) {
 					showConfigurationScreen(AppShell.Page.DASHBOARD);
 				} else {
-					appShell.showPage(AppShell.Page.DASHBOARD, dashboardBody);
-					attachDashboardPanels();
+					appShell.showPage(AppShell.Page.DASHBOARD, dashboardView);
+					dashboardView.refresh();
 				}
 			}
 			case PARKING_LOTS -> {
@@ -373,17 +410,14 @@ public class Main extends Application implements ParkingListener {
 					appShell.showPage(page, new PlaceholderView("No active parking lot",
 							"Launch a simulation from Dashboard to view its live parking-space grid."));
 				} else {
-					if (dashboardCenter != null) {
-						dashboardCenter.getChildren().remove(parkingLotPanel);
-						dashboardCenter.getChildren().remove(analyticsPanel);
-					}
-					ScrollPane lotsPage = createParkingLotsPage();
-					attachParkingLotsPanels();
-					appShell.showPage(page, lotsPage);
-					refreshParkingLotState();
+					appShell.showPage(page, parkingLotsView);
+					parkingLotsView.refresh();
 				}
 			}
-			case RESERVATIONS -> appShell.showPage(page, createReservationsPage());
+			case RESERVATIONS -> {
+				appShell.showPage(page, reservationView);
+				reservationView.refresh();
+			}
 			case PREDICTIONS -> {
 				if (dashboardCenter != null) {
 					dashboardCenter.getChildren().remove(analyticsPanel);
@@ -1291,6 +1325,52 @@ public class Main extends Application implements ParkingListener {
 		dialog.hide();
 	}
 
+	private void confirmReservation(ReservationView.ConfirmationData data) {
+		DateTimeFormatter dateFile = DateTimeFormatter.ofPattern("yyyyMMdd");
+		DateTimeFormatter timeFile = DateTimeFormatter.ofPattern("hh:mm a");
+		DateTimeFormatter dateDisplay = DateTimeFormatter.ofPattern("dd MMM yyyy");
+		String bookingId = "PW-" + data.date().format(dateFile) + "-"
+				+ String.format(Locale.ROOT, "%03d", bookingSequence.incrementAndGet());
+
+		String startTimeStr = data.startTime().format(timeFile);
+		String endTimeStr = data.startTime().plusHours(data.durationHours()).format(timeFile);
+
+		BookingRecord booking = new BookingRecord(
+				bookingId, data.carParkId(), data.carParkName(), data.slotLabel(),
+				data.date().format(dateDisplay), startTimeStr, endTimeStr,
+				data.durationHours(), data.totalCost(), "Confirmed");
+		carParkRepository.addBooking(booking);
+
+		if (carParkRepository.getActiveLot() != null
+				&& carParkRepository.getActiveLot().id().equals(data.carParkId())) {
+			int offsetSeconds = 0;
+			if (simulationState == SimulationState.RUNNING && parking != null) {
+				Instant simStart = Instant.ofEpochMilli(simulationStartedNanos / 1_000_000L);
+				Instant bookingStart = Instant.from(
+						LocalDateTime.of(data.date(), data.startTime()).atZone(java.time.ZoneId.systemDefault()).toInstant());
+				long computed = ChronoUnit.SECONDS.between(simStart, bookingStart);
+				offsetSeconds = computed < 0 ? 0 : (int) Math.min(computed, Integer.MAX_VALUE);
+			}
+			try {
+				carParkRepository.getActiveLot(); // ensure lot present
+				reservationManager.reserveForSpace("Web-" + bookingId, data.slotNumber(),
+						offsetSeconds, data.durationHours() * 3600);
+			} catch (IllegalArgumentException ex) {
+				// Capacity too small for this slot; the BookingRecord is still stored.
+				LOGGER.log(Level.WARNING, "Could not register booking {0} with reservation manager: {1}",
+						new Object[]{bookingId, ex.getMessage()});
+			}
+		}
+
+		if (dashboardView != null) {
+			dashboardView.refresh();
+		}
+		if (parkingLotsView != null) {
+			parkingLotsView.refresh();
+		}
+		reservationView.refresh();
+	}
+
 	private boolean isValidSpinnerInput(Spinner<Integer> spinner, int minimum, int maximum) {
 		try {
 			int value = Integer.parseInt(spinner.getEditor().getText().trim());
@@ -1340,7 +1420,9 @@ public class Main extends Application implements ParkingListener {
 			phase = "attaching live Dashboard components";
 			attachDashboardPanels();
 			phase = "opening Dashboard";
-			appShell.showPage(AppShell.Page.DASHBOARD, dashboardBody);
+			appShell.showPage(AppShell.Page.DASHBOARD, dashboardView);
+			dashboardView.setParking(parking);
+			dashboardView.refresh();
 			refreshDashboardStateIndicators();
 		} catch (RuntimeException exception) {
 			rollbackFailedLaunch();
@@ -1370,6 +1452,10 @@ public class Main extends Application implements ParkingListener {
 		carThreads.clear();
 		simulationLaunched = false;
 		simulationState = SimulationState.IDLE;
+		if (dashboardView != null) {
+			dashboardView.setParking(null);
+			dashboardView.refresh();
+		}
 		refreshDashboardStateIndicators();
 		refreshSimulationMonitor();
 	}
@@ -2024,7 +2110,30 @@ public class Main extends Application implements ParkingListener {
 		}
 		long runStartedNanos = System.nanoTime();
 		PreparedSimulation prepared = prepareSimulation(nbrPlaces, numCars, syncStrategy,
-				arrivalWindowSeconds, parkingDurationSeconds, simulationSeed, reservationManager.all(), this,
+				arrivalWindowSeconds, parkingDurationSeconds, simulationSeed, reservationManager.all(),
+				new ParkingListener() {
+					@Override
+					public void carParked(Parking source, int place, String carName, int occupied, int waiting, long waitMillis) {
+						Main.this.carParked(source, place, carName, occupied, waiting, waitMillis);
+						carParkRepository.carParked(source, place, carName, occupied, waiting, waitMillis);
+						runOnFxThread(() -> parkingLotsView.refresh());
+					}
+
+					@Override
+					public void carLeft(Parking source, int place, String carName, int occupied, int waiting,
+							double averageWaitMillis, int exits) {
+						Main.this.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
+						carParkRepository.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
+						runOnFxThread(() -> parkingLotsView.refresh());
+					}
+
+					@Override
+					public void parkingMetrics(Parking source, int occupied, int waiting) {
+						Main.this.parkingMetrics(source, occupied, waiting);
+						carParkRepository.parkingMetrics(source, occupied, waiting);
+						runOnFxThread(() -> parkingLotsView.refresh());
+					}
+				},
 				runStartedNanos);
 		long runParkingDurationMillis = parkingDurationSeconds * 1000L;
 
@@ -2176,6 +2285,13 @@ public class Main extends Application implements ParkingListener {
 		}
 		carThreads.clear();
 		arrivalTransitions.clear();
+		if (dashboardView != null) {
+			dashboardView.setParking(parking);
+			dashboardView.refresh();
+		}
+		if (parkingLotsView != null) {
+			parkingLotsView.refresh();
+		}
 		refreshDashboardStateIndicators();
 		refreshSimulationMonitor();
 	}

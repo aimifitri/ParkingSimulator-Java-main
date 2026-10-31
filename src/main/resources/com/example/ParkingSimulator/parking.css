@@ -1,14 +1,14 @@
 .root {
     -fx-font-family: "Inter", "Segoe UI", sans-serif;
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
 }
 
 .app-shell, .dashboard-body {
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
 }
 
 .sidebar {
-    -fx-background-color: #142B4A;
+    -fx-background-color: #0B132B;
     -fx-padding: 24px 14px 18px 14px;
 }
 
@@ -17,7 +17,7 @@
 }
 
 .brand-mark {
-    -fx-background-color: #3478F6;
+    -fx-background-color: #0066FF;
     -fx-background-radius: 9px;
     -fx-text-fill: white;
     -fx-font-size: 19px;
@@ -62,12 +62,17 @@
 }
 
 .nav-button:hover {
-    -fx-background-color: #203D62;
+    -fx-background-color: #162542;
+    -fx-text-fill: white;
+}
+
+.nav-button:pressed {
+    -fx-background-color: #0B132B;
     -fx-text-fill: white;
 }
 
 .nav-button-active, .nav-button-active:hover {
-    -fx-background-color: #3478F6;
+    -fx-background-color: #0066FF;
     -fx-text-fill: white;
 }
 
@@ -82,6 +87,48 @@
     -fx-padding: 20px 28px 18px 28px;
 }
 
+.top-header-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+    -fx-border-width: 0 0 1px 0;
+}
+
+.top-header-breadcrumb {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+
+.top-header-search {
+    -fx-background-color: #F4F6F9;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 6px 10px;
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+}
+
+.top-header-search:focused {
+    -fx-border-color: #0066FF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 102, 255, 0.16), 8, 0, 0, 1);
+}
+
+.top-header-clock {
+    -fx-text-fill: #475467;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.top-header-weather, .top-header-user {
+    -fx-background-color: #F1F5F9;
+    -fx-background-radius: 16px;
+    -fx-padding: 5px 12px;
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
 .shell-page-title {
     -fx-text-fill: #1D2939;
     -fx-font-size: 23px;
@@ -94,7 +141,7 @@
 }
 
 .eyebrow, .placeholder-marker {
-    -fx-text-fill: #3478F6;
+    -fx-text-fill: #0066FF;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
 }
@@ -122,7 +169,7 @@
     -fx-border-radius: 12px;
     -fx-border-width: 1px;
     -fx-padding: 15px;
-    -fx-effect: dropshadow(gaussian, rgba(20, 43, 74, 0.06), 12, 0, 0, 3);
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
 }
 
 .placeholder-view {
@@ -130,10 +177,10 @@
 }
 
 .dashboard-welcome {
-    -fx-background-color: linear-gradient(to right, #142B4A, #21476F);
+    -fx-background-color: linear-gradient(to right, #0B132B, #162542);
     -fx-background-radius: 14px;
     -fx-padding: 18px 20px;
-    -fx-effect: dropshadow(gaussian, rgba(20, 43, 74, 0.12), 16, 0, 0, 5);
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.12), 16, 0, 0, 5);
 }
 
 .dashboard-eyebrow {
@@ -208,10 +255,10 @@
     -fx-max-height: 40px;
 }
 
-.dashboard-kpi-icon-blue { -fx-background-color: #EFF6FF; -fx-text-fill: #3478F6; }
-.dashboard-kpi-icon-red { -fx-background-color: #FEF3F2; -fx-text-fill: #D92D20; }
-.dashboard-kpi-icon-green { -fx-background-color: #ECFDF3; -fx-text-fill: #039855; }
-.dashboard-kpi-icon-amber { -fx-background-color: #FFFAEB; -fx-text-fill: #B54708; }
+.dashboard-kpi-icon-blue { -fx-background-color: #EFF6FF; -fx-text-fill: #0066FF; }
+.dashboard-kpi-icon-red { -fx-background-color: #FEF2F2; -fx-text-fill: #EF4444; }
+.dashboard-kpi-icon-green { -fx-background-color: #ECFDF5; -fx-text-fill: #22C55E; }
+.dashboard-kpi-icon-amber { -fx-background-color: #FFFBEB; -fx-text-fill: #F59E0B; }
 
 .dashboard-utilization {
     -fx-background-color: #F8FAFC;
@@ -239,7 +286,7 @@
 }
 
 .dashboard-occupancy-progress {
-    -fx-accent: #3478F6;
+    -fx-accent: #0066FF;
     -fx-pref-height: 8px;
 }
 
@@ -298,12 +345,12 @@
 }
 
 .monitor-state-running {
-    -fx-background-color: #ECFDF3;
+    -fx-background-color: #ECFDF5;
     -fx-text-fill: #027A48;
 }
 
 .monitor-state-stopped {
-    -fx-background-color: #FEF3F2;
+    -fx-background-color: #FEF2F2;
     -fx-text-fill: #B42318;
 }
 
@@ -314,7 +361,7 @@
 }
 
 .metric-value {
-    -fx-text-fill: #142B4A;
+    -fx-text-fill: #0B132B;
     -fx-font-size: 21px;
     -fx-font-weight: bold;
 }
@@ -328,12 +375,16 @@
 }
 
 .primary-button {
-    -fx-background-color: #3478F6;
+    -fx-background-color: #0066FF;
     -fx-text-fill: white;
 }
 
 .primary-button:hover {
-    -fx-background-color: #2465DB;
+    -fx-background-color: #0052CC;
+}
+
+.primary-button:pressed {
+    -fx-background-color: #004499;
 }
 
 .secondary-button {
@@ -348,8 +399,13 @@
     -fx-border-color: #AEBBCD;
 }
 
+.secondary-button:pressed {
+    -fx-background-color: #EEF2F7;
+    -fx-border-color: #9FB0C4;
+}
+
 .validation-message {
-    -fx-text-fill: #D92D20;
+    -fx-text-fill: #EF4444;
     -fx-font-size: 12px;
 }
 
@@ -366,9 +422,9 @@
     -fx-background-radius: 9px;
 }
 
-.available-dot { -fx-background-color: #12B76A; }
-.occupied-dot { -fx-background-color: #F04438; }
-.reserved-dot { -fx-background-color: #F79009; }
+.available-dot { -fx-background-color: #22C55E; }
+.occupied-dot { -fx-background-color: #EF4444; }
+.reserved-dot { -fx-background-color: #F59E0B; }
 
 .lot-scroll, .analytics-scroll, .dashboard-scroll, .parking-lots-page-scroll,
 .reservations-page-scroll, .reports-page-scroll {
@@ -473,7 +529,7 @@
 }
 
 .reservation-row-vehicle {
-    -fx-text-fill: #142B4A;
+    -fx-text-fill: #0B132B;
     -fx-font-size: 13px;
     -fx-font-weight: bold;
 }
@@ -486,7 +542,7 @@
 .reservation-space-chip {
     -fx-background-color: #EFF4FF;
     -fx-background-radius: 7px;
-    -fx-text-fill: #245FD1;
+    -fx-text-fill: #0066FF;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-padding: 7px 9px;
@@ -513,22 +569,22 @@
 }
 
 .available-slot {
-    -fx-background-color: #ECFDF3;
-    -fx-border-color: #12B76A;
+    -fx-background-color: #ECFDF5;
+    -fx-border-color: #22C55E;
 }
 
 .occupied-slot {
-    -fx-background-color: #FEF3F2;
-    -fx-border-color: #F04438;
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #EF4444;
 }
 
 .reserved-slot {
-    -fx-background-color: #FFFAEB;
-    -fx-border-color: #F79009;
+    -fx-background-color: #FFFBEB;
+    -fx-border-color: #F59E0B;
 }
 
 .selected-slot {
-    -fx-background-color: #3478F6;
+    -fx-background-color: #0066FF;
     -fx-border-color: #1D4ED8;
     -fx-border-style: solid;
     -fx-border-width: 2px;
@@ -541,24 +597,24 @@
 }
 
 .slot-status {
-    -fx-text-fill: #039855;
+    -fx-text-fill: #22C55E;
     -fx-font-size: 8px;
     -fx-font-weight: bold;
 }
 
-.occupied-slot .slot-status { -fx-text-fill: #D92D20; }
-.reserved-slot .slot-status { -fx-text-fill: #B54708; }
+.occupied-slot .slot-status { -fx-text-fill: #EF4444; }
+.reserved-slot .slot-status { -fx-text-fill: #F59E0B; }
 .selected-slot .slot-number, .selected-slot .slot-status, .selected-slot .car-name {
     -fx-text-fill: white;
 }
 
-.vehicle-body { -fx-fill: #3478F6; }
+.vehicle-body { -fx-fill: #0066FF; }
 .vehicle-cabin { -fx-fill: #1D4ED8; }
 .vehicle-window { -fx-fill: #DCEBFF; }
 .vehicle-wheel { -fx-fill: #344054; }
 .vehicle-light { -fx-fill: #FDE68A; }
 .reservation-icon {
-    -fx-text-fill: #B54708;
+    -fx-text-fill: #F59E0B;
     -fx-font-size: 20px;
     -fx-font-weight: bold;
 }
@@ -592,12 +648,12 @@
 .chart-plot-background { -fx-background-color: #FFFFFF; }
 .chart-vertical-grid-lines, .chart-horizontal-grid-lines { -fx-stroke: #E4EAF2; }
 .chart-pie { -fx-border-color: #FFFFFF; -fx-border-width: 1px; }
-.default-color0.chart-pie { -fx-pie-color: #12B76A; }
-.default-color1.chart-pie { -fx-pie-color: #F04438; }
-.occupancy-chart .default-color2.chart-pie { -fx-pie-color: #F79009; }
-.occupancy-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #12B76A; }
-.occupancy-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #F04438; }
-.occupancy-chart .default-color2.chart-legend-item-symbol { -fx-background-color: #F79009; }
+.default-color0.chart-pie { -fx-pie-color: #22C55E; }
+.default-color1.chart-pie { -fx-pie-color: #EF4444; }
+.occupancy-chart .default-color2.chart-pie { -fx-pie-color: #F59E0B; }
+.occupancy-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #22C55E; }
+.occupancy-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #EF4444; }
+.occupancy-chart .default-color2.chart-legend-item-symbol { -fx-background-color: #F59E0B; }
 .chart-legend { -fx-background-color: transparent; }
 .chart-legend-item { -fx-text-fill: #667085; }
 .axis { -fx-tick-label-fill: #667085; }
@@ -609,25 +665,25 @@
     -fx-stroke-dash-array: 6 4;
 }
 .forecast-chart .default-color1.chart-series-line {
-    -fx-stroke: #F04438;
+    -fx-stroke: #EF4444;
     -fx-stroke-width: 3px;
 }
 .forecast-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #7F56D9; }
-.forecast-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #F04438; }
+.forecast-chart .default-color1.chart-legend-item-symbol { -fx-background-color: #EF4444; }
 .reports-occupancy-chart .default-color0.chart-series-line {
-    -fx-stroke: #F04438;
+    -fx-stroke: #EF4444;
     -fx-stroke-width: 2.5px;
 }
 .reports-occupancy-chart .default-color0.chart-line-symbol {
-    -fx-background-color: #F04438, #FFFFFF;
+    -fx-background-color: #EF4444, #FFFFFF;
 }
-.reports-occupancy-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #F04438; }
+.reports-occupancy-chart .default-color0.chart-legend-item-symbol { -fx-background-color: #EF4444; }
 
 .activity-panel { -fx-background-color: transparent; }
 .live-pill {
-    -fx-background-color: #ECFDF3;
+    -fx-background-color: #ECFDF5;
     -fx-background-radius: 20px;
-    -fx-text-fill: #039855;
+    -fx-text-fill: #22C55E;
     -fx-font-size: 9px;
     -fx-font-weight: bold;
     -fx-padding: 4px 8px;
@@ -662,21 +718,21 @@
 
 .radio-button { -fx-text-fill: #1D2939; }
 .radio-button .radio { -fx-border-color: #98A2B3; -fx-background-color: #FFFFFF; }
-.radio-button:selected .radio .dot { -fx-background-color: #3478F6; }
+.radio-button:selected .radio .dot { -fx-background-color: #0066FF; }
 
 .reservation-dialog-pane {
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
     -fx-padding: 0;
     -fx-background-insets: 0;
 }
 
 .reservation-dialog-pane > *.content {
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
     -fx-padding: 0;
 }
 
 .reservation-dialog-pane .button-bar {
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
     -fx-padding: 0 22px 18px 22px;
 }
 
@@ -685,13 +741,13 @@
 }
 
 .reservation-dialog-content {
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
 }
 
 .reservation-dialog-scroll,
 .reservation-dialog-scroll > .viewport {
-    -fx-background-color: #F4F7FB;
-    -fx-background: #F4F7FB;
+    -fx-background-color: #F4F6F9;
+    -fx-background: #F4F6F9;
     -fx-border-color: transparent;
 }
 
@@ -717,7 +773,7 @@
 }
 
 .reservation-brand-mark {
-    -fx-background-color: #3478F6;
+    -fx-background-color: #0066FF;
     -fx-background-radius: 9px;
     -fx-text-fill: #FFFFFF;
     -fx-font-size: 18px;
@@ -730,7 +786,7 @@
 }
 
 .reservation-title {
-    -fx-text-fill: #142B4A;
+    -fx-text-fill: #0B132B;
     -fx-font-size: 22px;
     -fx-font-weight: bold;
 }
@@ -741,7 +797,7 @@
 }
 
 .dialog-close-button {
-    -fx-background-color: #F4F7FB;
+    -fx-background-color: #F4F6F9;
     -fx-background-radius: 18px;
     -fx-text-fill: #667085;
     -fx-font-size: 19px;
@@ -756,11 +812,11 @@
 
 .dialog-close-button:hover {
     -fx-background-color: #E4EAF2;
-    -fx-text-fill: #142B4A;
+    -fx-text-fill: #0B132B;
 }
 
 .dialog-close-button:focused {
-    -fx-border-color: #3478F6;
+    -fx-border-color: #0066FF;
     -fx-border-radius: 18px;
 }
 
@@ -787,7 +843,7 @@
 .selected-space-chip {
     -fx-background-color: #EFF4FF;
     -fx-background-radius: 6px;
-    -fx-text-fill: #245FD1;
+    -fx-text-fill: #0066FF;
     -fx-font-size: 11px;
     -fx-font-weight: bold;
     -fx-padding: 6px 9px;
@@ -812,7 +868,7 @@
 .reservation-count {
     -fx-background-color: #EFF4FF;
     -fx-background-radius: 12px;
-    -fx-text-fill: #245FD1;
+    -fx-text-fill: #0066FF;
     -fx-font-size: 10px;
     -fx-font-weight: bold;
     -fx-padding: 5px 9px;
@@ -864,7 +920,7 @@
 }
 
 .reservation-table .placeholder .reservation-empty-icon {
-    -fx-text-fill: #F79009;
+    -fx-text-fill: #F59E0B;
     -fx-font-size: 23px;
 }
 
@@ -891,8 +947,8 @@
 .reservation-dialog-pane .text-field:focused,
 .reservation-dialog-pane .spinner:focused,
 .reservation-dialog-pane .spinner .text-field:focused {
-    -fx-border-color: #3478F6;
-    -fx-effect: dropshadow(gaussian, rgba(52, 120, 246, 0.16), 8, 0, 0, 1);
+    -fx-border-color: #0066FF;
+    -fx-effect: dropshadow(gaussian, rgba(0, 102, 255, 0.16), 8, 0, 0, 1);
 }
 
 .reservation-dialog-pane .button:disabled {
@@ -923,4 +979,807 @@
     -fx-text-fill: #667085;
     -fx-font-size: 11px;
     -fx-alignment: center;
+}
+
+/* ===== Step 3: Redesigned Home Dashboard ===== */
+.dashboard-view {
+}
+.dashboard-root {
+    -fx-background-color: #F4F6F9;
+}
+.hero-banner {
+    -fx-background-color: linear-gradient(to right, #0B132B, #162542);
+    -fx-padding: 24px 28px 22px 28px;
+}
+.hero-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+}
+.hero-subtitle {
+    -fx-text-fill: #CBD5E1;
+    -fx-font-size: 13px;
+}
+.hero-controls {
+    -fx-spacing: 10px;
+    -fx-alignment: center-right;
+}
+.status-chip {
+    -fx-background-color: #22C55E;
+    -fx-background-radius: 16px;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 6px 14px;
+    -fx-alignment: center;
+}
+.strategy-badge {
+    -fx-background-color: rgba(255, 255, 255, 0.12);
+    -fx-background-radius: 16px;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 6px 14px;
+    -fx-alignment: center;
+}
+.hero-button {
+    -fx-background-color: #FFFFFF;
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 14px;
+    -fx-cursor: hand;
+}
+.hero-button:hover {
+    -fx-background-color: #F1F5F9;
+}
+.hero-button-primary {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 8px 16px;
+    -fx-cursor: hand;
+}
+.hero-button-primary:hover {
+    -fx-background-color: #0052CC;
+}
+.kpi-bar {
+    -fx-spacing: 12px;
+    -fx-padding: 0 28px 0 28px;
+}
+.kpi-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.kpi-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+}
+.kpi-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.kpi-caption {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+}
+.kpi-icon {
+    -fx-alignment: center;
+    -fx-background-radius: 10px;
+    -fx-font-size: 20px;
+    -fx-min-width: 44px;
+    -fx-min-height: 44px;
+    -fx-max-width: 44px;
+    -fx-max-height: 44px;
+}
+.overview-section {
+    -fx-spacing: 12px;
+    -fx-padding: 24px 28px 10px 28px;
+}
+.overview-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.overview-name {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.overview-progress {
+}
+.overview-counts {
+    -fx-spacing: 14px;
+}
+.overview-rate {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.details-button {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #0066FF;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 6px;
+    -fx-padding: 5px 10px;
+    -fx-cursor: hand;
+}
+.details-button:hover {
+    -fx-background-color: #E2E8F0;
+}
+.distance-chip {
+    -fx-background-color: #F1F5F9;
+    -fx-background-radius: 12px;
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 3px 10px;
+}
+.count-chip {
+    -fx-alignment: center;
+    -fx-spacing: 4px;
+}
+.count-value {
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.count-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.map-section {
+    -fx-spacing: 12px;
+    -fx-padding: 10px 28px 0 28px;
+}
+.city-map {
+    -fx-background-color: #E2E8F0;
+    -fx-background-radius: 12px;
+    -fx-pref-height: 210px;
+}
+.map-pin {
+    -fx-alignment: center;
+    -fx-spacing: 2px;
+}
+.map-dot {
+}
+.map-label {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.reservation-panel {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.find-button {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px;
+    -fx-cursor: hand;
+}
+.find-button:hover {
+    -fx-background-color: #0052CC;
+}
+.live-grid-section {
+    -fx-padding: 0 28px 26px 28px;
+}
+.grid-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.grid-stats {
+    -fx-spacing: 16px;
+}
+.grid-stat-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.grid-stat-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.stat-pair {
+    -fx-alignment: center;
+    -fx-spacing: 4px;
+}
+.stat-pair-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.stat-pair-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.live-parking-grid {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-hgap: 10px;
+    -fx-vgap: 12px;
+}
+.grid-chart-row {
+    -fx-spacing: 14px;
+    -fx-alignment: center-left;
+}
+.occupancy-pie {
+}
+.grid-summary {
+    -fx-spacing: 8px;
+}
+.grid-summary-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.grid-occupancy-progress {
+    -fx-pref-height: 8px;
+    -fx-accent: #0066FF;
+}
+.grid-occupancy-progress > .bar {
+    -fx-background-radius: 8px;
+}
+.activity-section {
+    -fx-spacing: 10px;
+}
+.section-title-small {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.activity-log {
+    -fx-spacing: 6px;
+}
+.activity-entry {
+    -fx-text-fill: #344054;
+    -fx-font-family: "Menlo", "Consolas", monospace;
+    -fx-font-size: 11px;
+    -fx-padding: 5px 8px;
+}
+.activity-empty {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-padding: 5px 8px;
+}
+.view-all-link {
+    -fx-text-fill: #0066FF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-cursor: hand;
+}
+.view-all-link:hover {
+    -fx-underline: true;
+}
+.dashboard-columns {
+    -fx-spacing: 18px;
+    -fx-padding: 0 28px 0 28px;
+}
+.dashboard-left-column {
+    -fx-spacing: 16px;
+}
+.dashboard-right-column {
+    -fx-spacing: 16px;
+}
+.dashboard-scroll {
+    -fx-background: transparent;
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+}
+
+/* ===== Step 4: Parking Lots Inspector (Screen 2) ===== */
+.parking-lots-view {
+}
+.parking-lots-root {
+    -fx-background-color: #F4F6F9;
+}
+.lots-header {
+    -fx-spacing: 0;
+}
+.lots-top-header {
+    -fx-spacing: 16px;
+    -fx-alignment: center-left;
+}
+.lots-address-info {
+    -fx-text-fill: #475467;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.lots-metric-pills {
+    -fx-spacing: 10px;
+    -fx-alignment: center-right;
+}
+.lots-pill-card {
+    -fx-alignment: center;
+    -fx-spacing: 4px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 8px 12px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.05), 10, 0, 0, 2);
+}
+.lots-pill-title {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.lots-pill-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+.lots-sub-info {
+    -fx-spacing: 20px;
+    -fx-alignment: center-left;
+}
+.lots-sub-info-text {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.lots-sub-info-rate {
+    -fx-text-fill: #0066FF;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.lots-center {
+    -fx-spacing: 16px;
+}
+.lots-filter-bar {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+.lots-filter-title {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.lots-filter-chip {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 20px;
+    -fx-border-color: #CBD5E1;
+    -fx-border-radius: 20px;
+    -fx-border-width: 1px;
+    -fx-text-fill: #475467;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-padding: 6px 14px;
+    -fx-cursor: hand;
+}
+.lots-filter-chip:selected {
+    -fx-background-color: #0066FF;
+    -fx-border-color: #0066FF;
+    -fx-text-fill: white;
+}
+.lots-filter-chip:hover {
+    -fx-background-color: #F1F5F9;
+}
+.lots-grid-and-details {
+    -fx-spacing: 16px;
+    -fx-alignment: top-left;
+}
+.lots-left-column {
+    -fx-spacing: 12px;
+}
+.lots-right-column {
+    -fx-spacing: 0;
+}
+.lots-grid-title {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.lots-grid-caption {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+.lots-space-grid {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-hgap: 12px;
+    -fx-vgap: 14px;
+    -fx-padding: 0;
+}
+.lots-tile {
+}
+.lots-details-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 18px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.lots-details-title {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.lots-details-header {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+.lots-details-space-id {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.lots-details-status-pill {
+    -fx-background-radius: 16px;
+    -fx-padding: 5px 14px;
+    -fx-text-fill: white;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+.lots-status-available {
+    -fx-background-color: #22C55E;
+}
+.lots-status-occupied {
+    -fx-background-color: #EF4444;
+}
+.lots-status-reserved {
+    -fx-background-color: #F59E0B;
+}
+.lots-details-fields {
+    -fx-spacing: 10px;
+}
+.lots-detail-row {
+    -fx-spacing: 4px;
+}
+.lots-detail-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.lots-detail-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+}
+.lots-details-illustration {
+    -fx-alignment: center;
+}
+.lots-illustration-label {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 12px;
+}
+.lots-reserve-button {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px;
+    -fx-cursor: hand;
+}
+.lots-reserve-button:hover {
+    -fx-background-color: #0052CC;
+}
+.lots-reserve-button:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+
+/* ===== Step 5: Reservation Wizard & Confirmation ===== */
+.reservation-view {
+}
+.reservation-wizard-root {
+    -fx-background-color: #F4F6F9;
+}
+.reservation-step-indicator {
+    -fx-spacing: 0;
+}
+.res-step-block {
+    -fx-spacing: 10px;
+    -fx-alignment: center-left;
+}
+.res-step-chip {
+    -fx-background-color: #E2E8F0;
+    -fx-background-radius: 14px;
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+}
+.res-step-chip-active {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+}
+.res-step-chip-inactive {
+    -fx-background-color: #E2E8F0;
+    -fx-text-fill: #94A3B8;
+}
+.res-step-text {
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.res-step-text-active {
+    -fx-text-fill: #0066FF;
+}
+.res-step-text-inactive {
+    -fx-text-fill: #64748B;
+}
+.res-step-connector {
+    -fx-pref-height: 2px;
+    -fx-pref-width: 24px;
+    -fx-max-width: 24px;
+    -fx-background-color: #E2E8F0;
+    -fx-alignment: center;
+}
+.res-step-connector-active {
+    -fx-background-color: #0066FF;
+}
+.res-step-content {
+    -fx-spacing: 0;
+}
+.res-step-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 22px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.res-step-title {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+.res-step-subtitle {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 13px;
+}
+.res-step-actions {
+    -fx-spacing: 10px;
+    -fx-alignment: bottom-right;
+}
+.res-carpark-list {
+    -fx-spacing: 10px;
+}
+.res-carpark-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.04), 8, 0, 0, 2);
+}
+.res-carpark-card-selected {
+    -fx-border-color: #0066FF;
+    -fx-border-width: 2px;
+    -fx-background-color: #F0F7FF;
+}
+.res-carpark-card:hover {
+    -fx-border-color: #CBD5E1;
+}
+.res-carpark-name {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.res-carpark-location {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+}
+.res-carpark-distance {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+}
+.res-carpark-rate {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.res-availability-badge {
+    -fx-background-color: #ECFDF5;
+    -fx-background-radius: 12px;
+    -fx-text-fill: #22C55E;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 10px;
+}
+.res-feedback {
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+.res-feedback-error {
+    -fx-text-fill: #EF4444;
+}
+.res-primary-button {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+}
+.res-primary-button:hover {
+    -fx-background-color: #0052CC;
+}
+.res-primary-button:disabled {
+    -fx-opacity: 0.5;
+    -fx-cursor: default;
+}
+.res-secondary-button {
+    -fx-background-color: #F1F5F9;
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+}
+.res-secondary-button:hover {
+    -fx-background-color: #E2E8F0;
+}
+.res-legend {
+    -fx-spacing: 18px;
+    -fx-alignment: center-left;
+}
+.res-legend-chip {
+    -fx-spacing: 6px;
+    -fx-alignment: center-left;
+}
+.res-legend-text {
+    -fx-text-fill: #344054;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.res-space-grid {
+    -fx-background-color: transparent;
+    -fx-border-color: transparent;
+    -fx-hgap: 10px;
+    -fx-vgap: 12px;
+    -fx-padding: 0;
+}
+.res-tile {
+}
+.res-cost-card {
+    -fx-background-color: #F8FAFC;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+}
+.res-cost-title {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+}
+.res-cost-line {
+    -fx-text-fill: #475467;
+    -fx-font-size: 13px;
+}
+.res-cost-total {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
+}
+.reservation-confirmation-root {
+    -fx-background-color: #F4F6F9;
+}
+.res-confirmation-banner {
+    -fx-background-color: linear-gradient(to right, #162542, #0B132B);
+    -fx-background-radius: 0;
+}
+.res-check-badge {
+    -fx-background-color: #22C55E;
+    -fx-background-radius: 24px;
+    -fx-text-fill: white;
+    -fx-font-size: 26px;
+    -fx-alignment: center;
+    -fx-min-width: 48px;
+    -fx-min-height: 48px;
+    -fx-max-width: 48px;
+    -fx-max-height: 48px;
+}
+.res-confirmation-title {
+    -fx-text-fill: #FFFFFF;
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+}
+.res-confirmation-subtitle {
+    -fx-text-fill: #CBD5E1;
+    -fx-font-size: 13px;
+}
+.res-confirmation-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 12px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 12px;
+    -fx-border-width: 1px;
+    -fx-padding: 20px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 12, 0, 0, 3);
+}
+.res-section-title {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.res-meta-row {
+    -fx-spacing: 4px;
+}
+.res-meta-label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.res-meta-value-node {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 14px;
+}
+.res-meta-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 14px;
+}
+.res-meta-total {
+    -fx-text-fill: #0066FF;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.res-meta-section {
+    -fx-spacing: 12px;
+}
+.res-qr-box {
+    -fx-alignment: center;
+    -fx-spacing: 8px;
+}
+.res-qr-title {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.res-qr-canvas {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 8px;
+    -fx-border-width: 1px;
+}
+.res-arrival-notice {
+    -fx-text-fill: #475467;
+    -fx-font-size: 13px;
+    -fx-wrap-text: true;
+}
+.res-confirmation-actions {
+    -fx-spacing: 12px;
+    -fx-alignment: center-left;
 }
