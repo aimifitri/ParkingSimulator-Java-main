@@ -139,7 +139,11 @@ public class DashboardView extends BorderPane {
 		leftColumn.getStyleClass().add("dashboard-left-column");
 		VBox.setVgrow(leftColumn, Priority.ALWAYS);
 		leftColumn.getChildren().add(buildCarParkOverview());
-		leftColumn.getChildren().add(buildCityMapWidget());
+
+		VBox middleColumn = new VBox(16);
+		middleColumn.getStyleClass().add("dashboard-middle-column");
+		VBox.setVgrow(middleColumn, Priority.ALWAYS);
+		middleColumn.getChildren().add(buildCityMapWidget());
 
 		VBox rightColumn = new VBox(16);
 		rightColumn.getStyleClass().add("dashboard-right-column");
@@ -147,7 +151,10 @@ public class DashboardView extends BorderPane {
 		rightColumn.setMaxWidth(380);
 		rightColumn.getChildren().add(buildQuickReservationPanel());
 
-		columns.getChildren().addAll(leftColumn, rightColumn);
+		HBox.setHgrow(leftColumn, Priority.ALWAYS);
+		HBox.setHgrow(middleColumn, Priority.ALWAYS);
+		HBox.setHgrow(rightColumn, Priority.ALWAYS);
+		columns.getChildren().addAll(leftColumn, middleColumn, rightColumn);
 		root.getChildren().add(columns);
 
 		root.getChildren().add(buildLiveGridSection());
@@ -223,11 +230,11 @@ public class DashboardView extends BorderPane {
 		kpiAverageWait = new Label("0.00 s");
 
 		bar.getChildren().addAll(
-				kpiCard("Total Capacity", kpiTotalSpaces, "Across locations", "\u25A0", "#0066FF"),
-				kpiCard("Available Spaces", kpiAvailable, "Ready for vehicles", "\u2713", "#22C55E"),
+				kpiCard("Car Parks", kpiCarParks, "+0 today", "\u25A6", "#1D61E7"),
+				kpiCard("Total Spaces", kpiTotalSpaces, "Across locations", "\u25A0", "#1D61E7"),
+				kpiCard("Available Spaces", kpiAvailable, "Ready for vehicles", "\u2713", "#10B981"),
 				kpiCard("Occupied Spaces", kpiOccupied, "In use right now", "\u25CB", "#EF4444"),
-				kpiCard("Active Reservations", kpiReserved, "Future bookings", "\u25CF", "#F59E0B"),
-				kpiCard("Average Queue Wait", kpiAverageWait, "Current simulation", "\u23F1", "#F59E0B"));
+				kpiCard("Reserved Spaces", kpiReserved, "Future bookings", "\u25CF", "#F59E0B"));
 		return bar;
 	}
 
@@ -235,6 +242,8 @@ public class DashboardView extends BorderPane {
 		VBox card = new VBox(8);
 		card.getStyleClass().add("kpi-card");
 		card.setPrefWidth(190);
+		card.setMinWidth(125);
+		HBox.setHgrow(card, Priority.ALWAYS);
 
 		HBox top = new HBox(8);
 		Label iconLabel = new Label(icon);

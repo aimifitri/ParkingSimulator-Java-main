@@ -2097,3 +2097,154 @@
     -fx-text-fill: #00F0FF;
     -fx-background-color: rgba(6, 182, 212, 0.12);
 }
+
+/* ParkWise enterprise dashboard refresh */
+.root, .app-shell, .workspace, .main-layout,
+.dashboard-scroll, .dashboard-root, .predictions-scroll-wrapper,
+.monitor-scroll-wrapper, .reports-page-scroll {
+    -fx-background-color: #F4F6F9;
+}
+.sidebar, .top-header-bar {
+    -fx-background-color: #0F172A;
+}
+.sidebar {
+    -fx-border-color: transparent #1E293B transparent transparent;
+}
+.sidebar-brand, .brand-name, .nav-button, .top-header-breadcrumb {
+    -fx-text-fill: #F8FAFC;
+}
+.brand-subtitle, .sidebar-section-label, .sidebar-footer {
+    -fx-text-fill: #94A3B8;
+}
+.nav-button-active, .nav-button-active:hover {
+    -fx-background-color: #1D61E7;
+    -fx-text-fill: white;
+    -fx-border-color: #60A5FA transparent #60A5FA #60A5FA;
+    -fx-border-width: 0 0 0 3px;
+}
+.top-header-bar {
+    -fx-border-color: transparent transparent #243247 transparent;
+}
+.top-header-clock, .top-header-user-name {
+    -fx-text-fill: #E2E8F0;
+}
+.top-header-search {
+    -fx-background-color: #1E293B;
+    -fx-background-radius: 20px;
+    -fx-border-color: #475569;
+    -fx-border-radius: 20px;
+    -fx-text-fill: #F8FAFC;
+    -fx-prompt-text-fill: #94A3B8;
+    -fx-padding: 8px 14px;
+}
+.top-header-avatar {
+    -fx-background-color: #1D61E7;
+    -fx-background-radius: 999px;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-min-width: 34px;
+    -fx-min-height: 34px;
+    -fx-max-width: 34px;
+    -fx-max-height: 34px;
+}
+.top-header-user-status {
+    -fx-text-fill: #34D399;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.top-header-weather, .top-header-user {
+    -fx-background-color: #1E293B;
+    -fx-text-fill: #E2E8F0;
+}
+.shell-header {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+.shell-page-title, .section-title, .lots-grid-title, .preds-section-title,
+.res-step-title, .res-section-title, .monitor-kpi-title {
+    -fx-text-fill: #0F172A;
+}
+.shell-page-description, .section-caption, .lots-grid-caption,
+.preds-section-caption, .res-step-subtitle {
+    -fx-text-fill: #64748B;
+}
+.panel, .kpi-card, .overview-card, .reservation-panel, .map-section,
+.res-step-card, .res-cost-card, .lots-details-card, .preds-metric-pill,
+.preds-recommendation-card, .preds-forecast-chart, .monitor-kpi-card,
+.monitor-health-chip, .monitor-log-section, .reports-card, .metric-card,
+.lots-pill-card {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-background-radius: 12px;
+    -fx-border-radius: 12px;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.05), 14, 0, 0, 4);
+}
+.panel:hover, .kpi-card:hover, .overview-card:hover, .reservation-panel:hover,
+.preds-recommendation-card:hover {
+    -fx-border-color: #BFDBFE;
+    -fx-effect: dropshadow(three-pass-box, rgba(15, 23, 42, 0.09), 16, 0, 0, 4);
+}
+.hero-banner {
+    -fx-background-color:
+        linear-gradient(to right, rgba(15, 23, 42, 0.94), rgba(29, 97, 231, 0.50), transparent),
+        url("/public/images/skyline-banner.jpg"), #0F172A;
+    -fx-background-size: cover;
+}
+.hero-button-primary, .find-button, .primary-button {
+    -fx-background-color: #1D61E7;
+}
+.hero-button-primary:hover, .find-button:hover, .primary-button:hover {
+    -fx-background-color: #154EC2;
+}
+.kpi-value, .overview-name, .overview-rate, .count-value,
+.lots-details-space-id, .preds-recommendation-name, .preds-metric-value,
+.res-carpark-name, .res-meta-value-node, .res-meta-value,
+.monitor-kpi-value, .metric-value, .metric-caption {
+    -fx-text-fill: #0F172A;
+}
+.kpi-label, .kpi-caption, .overview-rate, .count-label,
+.lots-detail-label, .preds-recommendation-meta-text,
+.res-carpark-location, .res-cost-line {
+    -fx-text-fill: #64748B;
+}
+.top-header-search:focused {
+    -fx-border-color: #60A5FA;
+}
+.dashboard-columns {
+    -fx-alignment: top-left;
+}
+.dashboard-left-column, .dashboard-middle-column, .dashboard-right-column {
+    -fx-min-width: 0;
+}
+.city-map {
+    -fx-background-color: #EAF0F8;
+    -fx-background-radius: 12px;
+}
+.map-label {
+    -fx-text-fill: #0F172A;
+}
+.find-button {
+    -fx-text-fill: white;
+}
+.available-slot, .available-slot:hover, .lots-status-available {
+    -fx-background-color: #ECFDF5;
+    -fx-border-color: #10B981;
+    -fx-text-fill: #047857;
+}
+.occupied-slot, .occupied-slot:hover, .lots-status-occupied {
+    -fx-background-color: #FEF2F2;
+    -fx-border-color: #EF4444;
+    -fx-text-fill: #B91C1C;
+}
+.reserved-slot, .reserved-slot:hover, .lots-status-reserved {
+    -fx-background-color: #FFFBEB;
+    -fx-border-color: #F59E0B;
+    -fx-text-fill: #B45309;
+}
+.selected-slot {
+    -fx-background-color: #1D61E7;
+    -fx-border-color: #154EC2;
+    -fx-text-fill: #FFFFFF;
+}
