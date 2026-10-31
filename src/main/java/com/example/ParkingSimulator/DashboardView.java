@@ -51,12 +51,15 @@ public class DashboardView extends BorderPane {
 	private final Runnable onRestart;
 	private final Runnable onViewAllCarParks;
 	private final Runnable onFindAvailableSpaces;
+	private final java.util.function.Supplier<Double> averageWaitSupplier;
 
 	private Label kpiCarParks;
 	private Label kpiTotalSpaces;
 	private Label kpiAvailable;
 	private Label kpiOccupied;
 	private Label kpiReserved;
+	private Label kpiAverageWait;
+	private VBox overviewCards;
 
 	private TilePane parkingGrid;
 	private final Map<Integer, CustomRectangle> slotTiles = new HashMap<>();
@@ -79,6 +82,21 @@ public class DashboardView extends BorderPane {
 			Runnable onRestart,
 			Runnable onViewAllCarParks,
 			Runnable onFindAvailableSpaces) {
+		this(repository, parkingSupplier, statusText, strategyText, activityEntries, onSpawnVehicle, onSettings,
+				onRestart, onViewAllCarParks, onFindAvailableSpaces, () -> 0.0);
+	}
+
+	public DashboardView(CarParkRepository repository,
+			Supplier<Parking> parkingSupplier,
+			Supplier<String> statusText,
+			Supplier<String> strategyText,
+			List<String> activityEntries,
+			Runnable onSpawnVehicle,
+			Runnable onSettings,
+			Runnable onRestart,
+			Runnable onViewAllCarParks,
+			Runnable onFindAvailableSpaces,
+			Supplier<Double> averageWaitSupplier) {
 		this.repository = repository;
 		this.parkingSupplier = parkingSupplier;
 		this.statusText = statusText;
@@ -89,6 +107,7 @@ public class DashboardView extends BorderPane {
 		this.onRestart = onRestart;
 		this.onViewAllCarParks = onViewAllCarParks;
 		this.onFindAvailableSpaces = onFindAvailableSpaces;
+		this.averageWaitSupplier = averageWaitSupplier == null ? () -> 0.0 : averageWaitSupplier;
 		getStyleClass().add("dashboard-view");
 		setPadding(new Insets(0));
 		build();
@@ -172,9 +191,13 @@ public class DashboardView extends BorderPane {
 		Label strategyBadge = new Label(strategyText.get());
 		strategyBadge.getStyleClass().add("strategy-badge");
 
-		Button spawnButton = new Button("+ Spawn Vehicle");
+		Button spawnButton = new Button("Launch Quick Simulation");
 		spawnButton.getStyleClass().add("hero-button");
-		spawnButton.setOnAction(e -> onSpawnVehicle.run());
+		spawnButton.setOnAction(e -> {
+			if (onRestart != null) {
+				onRestart.run();
+			}
+		});
 
 		Button settingsButton = new Button("Settings");
 		settingsButton.getStyleClass().add("hero-button");
@@ -199,13 +222,14 @@ public class DashboardView extends BorderPane {
 		kpiAvailable = new Label("72");
 		kpiOccupied = new Label("88");
 		kpiReserved = new Label("20");
+		kpiAverageWait = new Label("0.00 s");
 
 		bar.getChildren().addAll(
-				kpiCard("Car Parks", kpiCarParks, "Across locations", "\u25A0", "#0066FF"),
 				kpiCard("Total Spaces", kpiTotalSpaces, "Across locations", "\u25A0", "#0066FF"),
 				kpiCard("Available Spaces", kpiAvailable, "Ready for vehicles", "\u2713", "#22C55E"),
 				kpiCard("Occupied Spaces", kpiOccupied, "In use right now", "\u25CB", "#EF4444"),
-				kpiCard("Reserved Spaces", kpiReserved, "Future bookings", "\u25CF", "#F59E0B"));
+				kpiCard("Active Reservations", kpiReserved, "Future bookings", "\u25CF", "#F59E0B"),
+				kpiCard("Average Queue Wait", kpiAverageWait, "Current simulation", "\u23F1", "#F59E0B"));
 		return bar;
 	}
 
@@ -245,6 +269,19 @@ public class DashboardView extends BorderPane {
 		kpiAvailable.setText(String.valueOf(totalAvailable));
 		kpiOccupied.setText(String.valueOf(totalOccupied));
 		kpiReserved.setText(String.valueOf(totalReserved));
+		double averageWaitMillis = averageWaitSupplier.get();
+		kpiAverageWait.setText(String.format(java.util.Locale.ROOT, "%.2f s", averageWaitMillis / 1000.0));
+		refreshOverviewCards();
+	}
+
+	private void refreshOverviewCards() {
+		if (overviewCards == null) {
+			return;
+		}
+		overviewCards.getChildren().clear();
+		for (CarPark park : repository.getAllCarParks()) {
+			overviewCards.getChildren().add(buildOverviewCard(park));
+		}
 	}
 
 	private VBox buildCarParkOverview() {
@@ -261,7 +298,7 @@ public class DashboardView extends BorderPane {
 		viewAll.setOnAction(e -> onViewAllCarParks.run());
 		header.getChildren().addAll(title, sp, viewAll);
 
-		VBox cards = new VBox(10);
+		VBox cards = overviewCards = new VBox(10);
 		cards.getStyleClass().add("overview-cards");
 		for (CarPark park : repository.getAllCarParks()) {
 			cards.getChildren().add(buildOverviewCard(park));

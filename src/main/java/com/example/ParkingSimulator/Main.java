@@ -221,7 +221,8 @@ public class Main extends Application implements ParkingListener {
 				() -> navigateTo(AppShell.Page.SETTINGS),
 				this::restartSimulation,
 				() -> navigateTo(AppShell.Page.PARKING_LOTS),
-				() -> navigateTo(AppShell.Page.RESERVATIONS));
+				() -> navigateTo(AppShell.Page.RESERVATIONS),
+				() -> averageQueueWaitMillis);
 		parkingLotsView = new ParkingLotsView(carParkRepository,
 				() -> parking,
 				slotNumber -> {
@@ -520,6 +521,24 @@ public class Main extends Application implements ParkingListener {
 			alert.setHeaderText("Simulation start failed");
 			alert.show();
 		}
+	}
+
+	private void refreshAllPresentationViews() {
+		runOnFxThread(() -> {
+			if (dashboardView != null) {
+				dashboardView.refresh();
+			}
+			if (parkingLotsView != null) {
+				parkingLotsView.refresh();
+			}
+			if (predictionsView != null) {
+				predictionsView.refresh();
+			}
+			if (simulationMonitorView != null) {
+				refreshSimulationMonitor();
+			}
+			refreshReportsPage();
+		});
 	}
 
 	private void refreshSimulationMonitor() {
@@ -2003,6 +2022,7 @@ public class Main extends Application implements ParkingListener {
 						carParkRepository.carParked(source, place, carName, occupied, waiting, waitMillis);
 						runOnFxThread(() -> parkingLotsView.refresh());
 						runOnFxThread(() -> predictionsView.refresh());
+						refreshAllPresentationViews();
 					}
 
 					@Override
@@ -2012,6 +2032,7 @@ public class Main extends Application implements ParkingListener {
 						carParkRepository.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
 						runOnFxThread(() -> parkingLotsView.refresh());
 						runOnFxThread(() -> predictionsView.refresh());
+						refreshAllPresentationViews();
 					}
 
 					@Override
@@ -2020,6 +2041,7 @@ public class Main extends Application implements ParkingListener {
 						carParkRepository.parkingMetrics(source, occupied, waiting);
 						runOnFxThread(() -> parkingLotsView.refresh());
 						runOnFxThread(() -> predictionsView.refresh());
+						refreshAllPresentationViews();
 					}
 				},
 				runStartedNanos);
@@ -2043,6 +2065,9 @@ public class Main extends Application implements ParkingListener {
 		averageQueueWaitMillis = 0;
 		lastReportedWaitingCount = 0;
 		elapsedAtStopMillis = 0;
+		if (predictionsView != null) {
+			predictionsView.resetActualData();
+		}
 
 		simulationStartedNanos = runStartedNanos;
 		if (forecastOccupancySeries != null) {

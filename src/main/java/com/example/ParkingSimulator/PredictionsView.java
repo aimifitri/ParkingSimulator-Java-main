@@ -68,6 +68,7 @@ public class PredictionsView extends BorderPane {
 	private Label historicalModelScoreLabel;
 
 	private HistoricalOccupancyPredictor historicalPredictor;
+	private ComboBox<CarPark> destinationSelector;
 
 	public PredictionsView(CarParkRepository repository,
 			Supplier<Parking> parkingSupplier,
@@ -90,6 +91,11 @@ public class PredictionsView extends BorderPane {
 		getStyleClass().add("predictions-view");
 		setPadding(new Insets(0));
 		setCenter(buildPage());
+		CarPark selected = destinationSelector == null ? null : destinationSelector.getValue();
+		if (selected != null) {
+			generatePrediction(selected.totalCapacity(), numCarsSupplier.get(), arrivalWindowSupplier.get(),
+					"2 Hours", seedSupplier.get());
+		}
 	}
 
 	public void setHistoricalPredictor(HistoricalOccupancyPredictor predictor) {
@@ -111,6 +117,16 @@ public class PredictionsView extends BorderPane {
 		}
 		if (recommendationsContainer != null) {
 			renderRecommendations();
+		}
+	}
+
+	public void resetActualData() {
+		actualPoints.clear();
+		if (actualSeries != null) {
+			actualSeries.getData().clear();
+		}
+		if (actualCurrentValue != null) {
+			actualCurrentValue.setText("\u2014");
 		}
 	}
 
@@ -144,7 +160,7 @@ public class PredictionsView extends BorderPane {
 		bar.setAlignment(Pos.CENTER_LEFT);
 
 		List<CarPark> parks = repository.getAllCarParks();
-		ComboBox<CarPark> destinationSelector = new ComboBox<>(
+		destinationSelector = new ComboBox<>(
 				javafx.collections.FXCollections.observableArrayList(parks));
 		destinationSelector.setConverter(new javafx.util.StringConverter<>() {
 			@Override
@@ -178,8 +194,8 @@ public class PredictionsView extends BorderPane {
 		Button generateButton = new Button("Generate Prediction");
 		generateButton.getStyleClass().add("preds-primary-button");
 		generateButton.setMaxWidth(Double.MAX_VALUE);
-		generateButton.setOnAction(e -> generatePrediction(capacitySupplier.get(), numCarsSupplier.get(),
-				arrivalWindowSupplier.get(), durationSelector.getValue(), seedSupplier.get()));
+		destinationSelector.setOnAction(e -> generatePredictionForSelectedPark(durationSelector.getValue()));
+		generateButton.setOnAction(e -> generatePredictionForSelectedPark(durationSelector.getValue()));
 
 		bar.getChildren().addAll(new Label("Destination"), destinationSelector, new Label("Start"), startTimeSelector,
 				new Label("Duration"), durationSelector, new Region(), generateButton);
@@ -219,6 +235,13 @@ public class PredictionsView extends BorderPane {
 		}
 
 		renderRecommendations();
+	}
+
+	private void generatePredictionForSelectedPark(String durationText) {
+		CarPark selected = destinationSelector == null ? null : destinationSelector.getValue();
+		int capacity = selected == null ? capacitySupplier.get() : selected.totalCapacity();
+		generatePrediction(capacity, numCarsSupplier.get(), arrivalWindowSupplier.get(),
+				durationText, seedSupplier.get());
 	}
 
 	private int parseDurationHours(String text) {

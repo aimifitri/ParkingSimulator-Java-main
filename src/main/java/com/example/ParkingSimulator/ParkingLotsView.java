@@ -64,6 +64,10 @@ public class ParkingLotsView extends BorderPane {
 	private VBox detailsRate;
 	private VBox detailsVehicle;
 	private VBox detailsBooking;
+	private VBox detailsCapacity;
+	private VBox detailsOccupancy;
+	private VBox detailsLocation;
+	private VBox detailsCoordinates;
 	private Button reserveButton;
 
 	public ParkingLotsView(CarParkRepository repository,
@@ -288,7 +292,12 @@ public class ParkingLotsView extends BorderPane {
 		detailsRate = detailRow("Hourly rate", "RM5.00/hr");
 		detailsVehicle = detailRow("Current vehicle", "\u2014");
 		detailsBooking = detailRow("Booking status", "None");
-		gridFields.getChildren().addAll(detailsFloor, detailsType, detailsRate, detailsVehicle, detailsBooking);
+		detailsCapacity = detailRow("Capacity", "0 spaces");
+		detailsOccupancy = detailRow("Occupancy", "0%");
+		detailsLocation = detailRow("Location", "\u2014");
+		detailsCoordinates = detailRow("Coordinates", "\u2014");
+		gridFields.getChildren().addAll(detailsFloor, detailsType, detailsRate, detailsVehicle, detailsBooking,
+				detailsCapacity, detailsOccupancy, detailsLocation, detailsCoordinates);
 
 		PlaceholderNode illustration = new PlaceholderNode("Space illustration", 260, 160);
 		illustration.getStyleClass().add("lots-details-illustration");
@@ -395,6 +404,7 @@ public class ParkingLotsView extends BorderPane {
 		if (detailsTitle == null) {
 			return;
 		}
+		refreshLotInspector();
 		if (selectedSlotNumber == -1) {
 			detailsTitle.setText("Parking Space Details");
 			detailsSpaceId.setText("\u2014");
@@ -441,6 +451,19 @@ public class ParkingLotsView extends BorderPane {
 			setDetailValue(detailsBooking, "Booked \u2014 " + r.vehicleId());
 		}
 		reserveButton.setDisable(state.status() != Parking.SpaceStatus.AVAILABLE);
+	}
+
+	private void refreshLotInspector() {
+		if (selectedCarPark == null || detailsCapacity == null) {
+			return;
+		}
+		setDetailValue(detailsCapacity, selectedCarPark.totalCapacity() + " spaces");
+		setDetailValue(detailsOccupancy, String.format(java.util.Locale.ROOT, "%.1f%%",
+				selectedCarPark.getOccupancyRate()));
+		setDetailValue(detailsLocation, selectedCarPark.location());
+		int hash = Math.abs(selectedCarPark.id().hashCode() % 1000);
+		setDetailValue(detailsCoordinates, String.format(java.util.Locale.ROOT, "3.%03d° N, 101.%03d° E",
+				hash / 2, hash * 7 % 1000));
 	}
 
 	private Parking.SpaceState findState(List<Parking.SpaceState> states, int slot) {
