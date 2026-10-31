@@ -30,6 +30,10 @@
 * ParkingListener.java: Reports parking events without tying the parking model to JavaFX.
 * Voiture.java: Represents a car trying to park in the parking lot.
 
+## Baseline Acknowledgment & Attribution
+
+ParkWise expands upon the foundation outlined in `Mini Projet Simulateur parking.pdf`. The core problem statement—simulating parking contention through multithreaded process management—was refactored from the starter specification into an enterprise-grade Java 21 desktop application adhering strictly to Chapter 4 Operating System theory.
+
 
 ## Thread Management and Critical Section
 The application is designed to manage multiple threads representing cars trying to park simultaneously. The critical section (parking operation) is protected using Mutex or Semaphore to ensure thread safety and prevent race conditions. This will avoid conflicts and ensure consistent state updates.

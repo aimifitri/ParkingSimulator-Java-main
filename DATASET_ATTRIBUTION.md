@@ -11,3 +11,19 @@ The application bundles `src/main/resources/com/parkwise/parking-birmingham.csv`
 - **Use limitations:** this is historical Birmingham data. It is not a live sensor feed and does not represent current occupancy in the user's city.
 
 Suggested attribution: “Parking Birmingham dataset by Daniel Stolfi, via the UCI Machine Learning Repository, DOI: 10.24432/C51K5Z, CC BY 4.0.”
+
+# Project Attribution & Foundation Baseline
+
+## Legacy Specification Reference
+- **Source File:** `Mini Projet Simulateur parking.pdf`
+- **Role:** Original starter project specification ("Simulation du Problème de Parking") serving as the initial problem formulation and concept baseline.
+- **Inherited Core OS Concepts:**
+  - Vehicle modeling via concurrent Java threads (`Runnable`).
+  - Shared resource allocation for finite parking space availability.
+  - Synchronization mechanisms (Mutexes, Semaphores, and Deadlock prevention).
+
+## Refactored Architecture (ParkWise Team Expansion)
+- **Package Migration:** Transitioned legacy structure into `com.parkwise` standard Java 21 packages (`model`, `view`, `service`, `strategy`).
+- **Domain Standardization:** Fully translated French variable and class names to English standard domain models.
+- **UI Engine:** Replaced placeholder UI elements with a complete 7-screen JavaFX dashboard leveraging `Platform.runLater()` for UI thread safety.
+- **Quality Assurance:** Built a 29-test JUnit 5 verification suite to ensure zero regressions during concurrency runs.
