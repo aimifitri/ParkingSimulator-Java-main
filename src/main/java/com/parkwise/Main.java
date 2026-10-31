@@ -218,7 +218,7 @@ public class Main extends Application implements ParkingListener {
 			historicalDataUnavailableMessage = "Historical occupancy data could not be loaded. The bundled Birmingham dataset is required for this view.";
 		}
 		Parking.configureLogging();
-		appShell = new AppShell(this::navigateTo);
+		appShell = new AppShell(this::navigateTo, this::searchCarPark);
 		dashboardView = new DashboardView(carParkRepository,
 				() -> parking,
 				() -> switch (simulationState) {
@@ -454,6 +454,23 @@ public class Main extends Application implements ParkingListener {
 			}
 			case SETTINGS -> showConfigurationScreen(AppShell.Page.SETTINGS);
 		}
+	}
+
+	private boolean searchCarPark(String query) {
+		String normalizedQuery = query.toLowerCase(Locale.ROOT);
+		CarPark match = carParkRepository.getAllCarParks().stream()
+				.filter(carPark -> carPark.name().toLowerCase(Locale.ROOT).contains(normalizedQuery)
+						|| carPark.id().toLowerCase(Locale.ROOT).contains(normalizedQuery)
+						|| carPark.location().toLowerCase(Locale.ROOT).contains(normalizedQuery))
+				.findFirst()
+				.orElse(null);
+		if (match == null) {
+			return false;
+		}
+
+		parkingLotsView.selectCarPark(match);
+		navigateTo(AppShell.Page.PARKING_LOTS);
+		return true;
 	}
 
 	private Node showSimulationMonitor() {
