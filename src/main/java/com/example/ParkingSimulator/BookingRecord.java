@@ -38,7 +38,7 @@ public record BookingRecord(
         if (durationHours < 1) {
             throw new IllegalArgumentException("Duration must be at least 1 hour");
         }
-        if (totalCost < 0) {
+        if (!Double.isFinite(totalCost) || totalCost < 0) {
             throw new IllegalArgumentException("Total cost cannot be negative");
         }
         if (status == null || status.isBlank()) {

@@ -3,9 +3,8 @@ package com.example.ParkingSimulator;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -16,10 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
 import javafx.scene.control.Label;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -30,8 +26,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 /**
  * Screens 3 &amp; 4 of the ParkWise redesign: a 3-step reservation wizard and a
@@ -71,7 +65,7 @@ public class ReservationView extends BorderPane {
 
 	private Label step1Active, step2Active, step3Active;
 	private Label step1Label, step2Label, step3Label;
-	private Button step1Next, step2Next, step3Confirm, step3Back;
+	private Button step1Next, step2Next;
 	private Label step1Feedback, step2Feedback, step3Feedback;
 	private TilePane spaceGrid;
 	private Label availabilityLegendAvailable, availabilityLegendOccupied, availabilityLegendReserved;
@@ -387,20 +381,23 @@ public class ReservationView extends BorderPane {
 		subtitle.getStyleClass().add("res-step-subtitle");
 		subtitle.setWrapText(true);
 
-		DatePicker datePicker = new DatePicker(selectedDate == null ? LocalDate.now() : selectedDate);
+		selectedDate = selectedDate == null ? LocalDate.now() : selectedDate;
+		DatePicker datePicker = new DatePicker(selectedDate);
 		datePicker.setPromptText("Date");
 		datePicker.setMaxWidth(Double.MAX_VALUE);
 		datePicker.setOnAction(e -> selectedDate = datePicker.getValue());
 
+		DateTimeFormatter timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale.ENGLISH);
+		selectedStartTime = selectedStartTime == null ? LocalTime.of(10, 30) : selectedStartTime;
 		ComboBox<String> timeBox = new ComboBox<>(javafx.collections.FXCollections.observableArrayList(
 				"08:00 AM", "09:00 AM", "10:30 AM", "12:00 PM", "02:00 PM", "03:30 PM", "05:00 PM", "06:30 PM", "08:00 PM"));
-		timeBox.setValue(selectedStartTime == null ? "10:30 AM" : selectedStartTime.format(DateTimeFormatter.ofPattern("hh:mm a")));
+		timeBox.setValue(selectedStartTime.format(timeFormatter));
 		timeBox.setPromptText("Start Time");
 		timeBox.setMaxWidth(Double.MAX_VALUE);
 		timeBox.setOnAction(e -> {
 			String v = timeBox.getValue();
 			if (v != null) {
-				selectedStartTime = LocalTime.parse(v, DateTimeFormatter.ofPattern("hh:mm a"));
+				selectedStartTime = LocalTime.parse(v, timeFormatter);
 			}
 		});
 
@@ -432,6 +429,16 @@ public class ReservationView extends BorderPane {
 				step3Feedback.getStyleClass().setAll("res-feedback", "res-feedback-error");
 				return;
 			}
+			if (selectedDate.isBefore(LocalDate.now())) {
+				step3Feedback.setText("Reservation date cannot be in the past.");
+				step3Feedback.getStyleClass().setAll("res-feedback", "res-feedback-error");
+				return;
+			}
+			if (selectedDate.equals(LocalDate.now()) && selectedStartTime.isBefore(LocalTime.now())) {
+				step3Feedback.setText("Reservation start time cannot be in the past.");
+				step3Feedback.getStyleClass().setAll("res-feedback", "res-feedback-error");
+				return;
+			}
 			step3Feedback.setText("");
 			double total = selectedCarPark.hourlyRate() * selectedDurationHours;
 			pending = new ConfirmationData(
@@ -439,6 +446,9 @@ public class ReservationView extends BorderPane {
 					selectedCarPark.hourlyRate(), selectedSlot,
 					String.format("A%02d - Level A", selectedSlot),
 					selectedDate, selectedStartTime, selectedDurationHours, total);
+			if (onConfirm != null) {
+				onConfirm.accept(pending);
+			}
 			showConfirmation();
 		});
 

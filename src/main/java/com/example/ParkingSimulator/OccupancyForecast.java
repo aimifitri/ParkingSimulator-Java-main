@@ -18,6 +18,9 @@ final class OccupancyForecast {
 
 	static List<Point> predict(List<Integer> arrivalDelaysMillis, int parkingDurationMillis, int capacity,
 			List<Reservation> reservations) {
+		if (arrivalDelaysMillis == null || reservations == null) {
+			throw new IllegalArgumentException("Arrival delays and reservations must not be null");
+		}
 		if (parkingDurationMillis < 1) {
 			throw new IllegalArgumentException("Parking duration must be positive");
 		}

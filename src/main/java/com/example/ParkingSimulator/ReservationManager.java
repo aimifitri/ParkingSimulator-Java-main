@@ -65,6 +65,9 @@ final class ReservationManager {
 		if (startOffsetSeconds < 0 || durationSeconds < 1) {
 			throw new IllegalArgumentException("Reservation times must be positive");
 		}
+		if ((long) startOffsetSeconds + durationSeconds > Integer.MAX_VALUE) {
+			throw new IllegalArgumentException("Reservation interval exceeds the supported time range");
+		}
 	}
 
 	synchronized List<Reservation> all() {
@@ -72,6 +75,9 @@ final class ReservationManager {
 	}
 
 	synchronized boolean cancel(String reservationId) {
+		if (reservationId == null || reservationId.isBlank()) {
+			return false;
+		}
 		return reservations.removeIf(reservation -> reservation.id().equals(reservationId));
 	}
 

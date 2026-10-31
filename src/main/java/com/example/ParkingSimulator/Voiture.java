@@ -1,4 +1,5 @@
 package com.example.ParkingSimulator;
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -9,7 +10,7 @@ public class Voiture extends Thread {
 	private final Parking parking;
 	private final long parkingDurationMillis;
 	private final Reservation reservation;
-	private int place;
+	private int place = -1;
 
 	public Voiture(String nom, Parking parking) {
 		this(nom, parking, 10_000L, null);
@@ -20,11 +21,14 @@ public class Voiture extends Thread {
 	}
 
 	public Voiture(String nom, Parking parking, long parkingDurationMillis, Reservation reservation) {
+		if (nom == null || nom.isBlank()) {
+			throw new IllegalArgumentException("Vehicle identifier is required");
+		}
 		if (parkingDurationMillis < 1) {
 			throw new IllegalArgumentException("Parking duration must be at least 1 millisecond");
 		}
-		this.nom = nom;
-		this.parking = parking;
+		this.nom = nom.trim();
+		this.parking = Objects.requireNonNull(parking, "Parking is required");
 		this.parkingDurationMillis = parkingDurationMillis;
 		this.reservation = reservation;
 	}

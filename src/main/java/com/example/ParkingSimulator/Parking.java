@@ -111,6 +111,17 @@ public class Parking {
 
 	public Parking(int nbrPlaces, IStrategy strategy, ParkingListener listener, int syncStrategy,
 			List<Reservation> reservations, long simulationStartedNanos) {
+		if (nbrPlaces < 1) {
+			throw new IllegalArgumentException("Parking capacity must be positive");
+		}
+		if (syncStrategy != 1 && syncStrategy != 2) {
+			throw new IllegalArgumentException("Synchronization strategy must be 1 (semaphore) or 2 (mutex)");
+		}
+		Objects.requireNonNull(strategy, "Parking strategy is required");
+		Objects.requireNonNull(reservations, "Reservations must not be null");
+		if (reservations.stream().anyMatch(Objects::isNull)) {
+			throw new IllegalArgumentException("Reservations cannot contain null entries");
+		}
 		// Initialize the semaphore and mutex
 		this.placesSemaphore = new Semaphore(nbrPlaces, true);
 		this.syncStrategy = syncStrategy;

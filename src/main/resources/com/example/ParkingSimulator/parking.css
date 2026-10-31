@@ -1783,3 +1783,184 @@
     -fx-spacing: 12px;
     -fx-alignment: center-left;
 }
+
+/* ===== Step 6: Smart Prediction & Recommendation Engine (Screen 5) ===== */
+.predictions-view {
+}
+.predictions-page-root {
+    -fx-background-color: #F4F6F9;
+}
+.preds-control-bar {
+    -fx-spacing: 12px;
+    -fx-alignment: center-left;
+}
+.preds-control-bar Label {
+    -fx-text-fill: #475467;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.preds-primary-button {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px 18px;
+    -fx-cursor: hand;
+}
+.preds-primary-button:hover {
+    -fx-background-color: #0052CC;
+}
+.preds-forecast-section {
+    -fx-spacing: 0;
+}
+.preds-section-title {
+    -fx-text-fill: #1D2939;
+    -fx-font-size: 17px;
+    -fx-font-weight: bold;
+}
+.preds-section-caption {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+}
+.preds-forecast-chart {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.06), 10, 0, 0, 2);
+}
+.preds-forecast-metrics {
+    -fx-spacing: 16px;
+    -fx-alignment: center-left;
+}
+.preds-metric-pill {
+    -fx-alignment: center;
+    -fx-spacing: 4px;
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 10px 14px;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.05), 10, 0, 0, 2);
+}
+.preds-metric-title {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+.preds-metric-value {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 17px;
+}
+.preds-recommendations-section {
+    -fx-spacing: 0;
+}
+.preds-recommendations-list {
+    -fx-spacing: 12px;
+}
+.preds-recommendation-card {
+    -fx-background-color: #FFFFFF;
+    -fx-background-radius: 10px;
+    -fx-border-color: #E2E8F0;
+    -fx-border-radius: 10px;
+    -fx-border-width: 1px;
+    -fx-padding: 16px;
+    -fx-cursor: hand;
+    -fx-effect: dropshadow(gaussian, rgba(11, 19, 43, 0.04), 8, 0, 0, 2);
+}
+.preds-recommendation-card:hover {
+    -fx-border-color: #CBD5E1;
+}
+.preds-recommendation-header, .preds-recommendation-card > .hbox {
+}
+.preds-rank-badge {
+    -fx-background-color: #0066FF;
+    -fx-background-radius: 12px;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-alignment: center;
+    -fx-min-width: 24px;
+    -fx-min-height: 24px;
+    -fx-max-width: 24px;
+    -fx-max-height: 24px;
+}
+.preds-recommendation-name {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+}
+.preds-recommendation-score {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+.preds-recommendation-badge {
+    -fx-background-color: #F1F5F9;
+    -fx-background-radius: 12px;
+    -fx-text-fill: #0066FF;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+    -fx-padding: 4px 10px;
+}
+.preds-recommendation-meta {
+    -fx-spacing: 14px;
+    -fx-alignment: center-left;
+}
+.preds-recommendation-meta-text {
+    -fx-text-fill: #475467;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+.preds-recommendation-progress {
+    -fx-pref-height: 8px;
+}
+.preds-recommendation-progress > .bar {
+    -fx-background-radius: 8px;
+    -fx-accent: #0066FF;
+}
+.preds-book-button {
+    -fx-background-color: #0066FF;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-background-radius: 8px;
+    -fx-padding: 10px;
+    -fx-cursor: hand;
+}
+.preds-book-button:hover {
+    -fx-background-color: #0052CC;
+}
+.preds-historical-section {
+    -fx-spacing: 0;
+}
+.preds-historical-controls {
+    -fx-spacing: 8px;
+}
+.preds-historical-controls Label {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+.preds-historical-result {
+    -fx-text-fill: #0B132B;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-wrap-text: true;
+}
+.preds-historical-score {
+    -fx-text-fill: #64748B;
+    -fx-font-size: 12px;
+    -fx-wrap-text: true;
+}
+.preds-historical-note {
+    -fx-text-fill: #94A3B8;
+    -fx-font-size: 11px;
+    -fx-wrap-text: true;
+}
+.predictions-scroll-wrapper {
+    -fx-background-color: #F4F6F9;
+}

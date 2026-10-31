@@ -81,6 +81,7 @@ public class Main extends Application implements ParkingListener {
 	private DashboardView dashboardView;
 	private ParkingLotsView parkingLotsView;
 	private ReservationView reservationView;
+	private PredictionsView predictionsView;
 	private final java.util.concurrent.atomic.AtomicInteger bookingSequence = new java.util.concurrent.atomic.AtomicInteger(0);
 	private Node setupView;
 	private Button launchButton;
@@ -235,6 +236,16 @@ public class Main extends Application implements ParkingListener {
 				data -> confirmReservation(data),
 				() -> navigateTo(AppShell.Page.RESERVATIONS),
 				() -> navigateTo(AppShell.Page.DASHBOARD));
+		predictionsView = new PredictionsView(carParkRepository,
+				() -> parking,
+				() -> nbrPlaces,
+				() -> numCars,
+				() -> arrivalWindowSeconds,
+				() -> parkingDurationSeconds,
+				() -> simulationSeed,
+				() -> simulationStartedNanos,
+				park -> navigateTo(AppShell.Page.RESERVATIONS));
+		predictionsView.setHistoricalPredictor(historicalOccupancyPredictor);
 		configureAnalyticsPanel();
 		activityEntries.addListener((ListChangeListener<String>) change -> {
 			refreshDashboardActivityEntries();
@@ -419,20 +430,8 @@ public class Main extends Application implements ParkingListener {
 				reservationView.refresh();
 			}
 			case PREDICTIONS -> {
-				if (dashboardCenter != null) {
-					dashboardCenter.getChildren().remove(analyticsPanel);
-				}
-				ensurePredictionsPage();
-				setPredictionsAnalyticsLayout(true);
-				refreshPredictionSummary();
-				analyticsPageScroll.setContent(predictionsPageContent);
-				analyticsPageScroll.setFitToWidth(true);
-				if (!analyticsPageScroll.getStyleClass().contains("analytics-scroll")) {
-					analyticsPageScroll.getStyleClass().add("analytics-scroll");
-				}
-				analyticsPanel.setVisible(true);
-				analyticsPanel.setManaged(true);
-				appShell.showPage(page, analyticsPageScroll);
+				appShell.showPage(page, predictionsView);
+				predictionsView.refresh();
 			}
 			case SIMULATION_MONITOR -> {
 				appShell.showPage(page, showSimulationMonitor());
@@ -2117,6 +2116,7 @@ public class Main extends Application implements ParkingListener {
 						Main.this.carParked(source, place, carName, occupied, waiting, waitMillis);
 						carParkRepository.carParked(source, place, carName, occupied, waiting, waitMillis);
 						runOnFxThread(() -> parkingLotsView.refresh());
+						runOnFxThread(() -> predictionsView.refresh());
 					}
 
 					@Override
@@ -2125,6 +2125,7 @@ public class Main extends Application implements ParkingListener {
 						Main.this.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
 						carParkRepository.carLeft(source, place, carName, occupied, waiting, averageWaitMillis, exits);
 						runOnFxThread(() -> parkingLotsView.refresh());
+						runOnFxThread(() -> predictionsView.refresh());
 					}
 
 					@Override
@@ -2132,6 +2133,7 @@ public class Main extends Application implements ParkingListener {
 						Main.this.parkingMetrics(source, occupied, waiting);
 						carParkRepository.parkingMetrics(source, occupied, waiting);
 						runOnFxThread(() -> parkingLotsView.refresh());
+						runOnFxThread(() -> predictionsView.refresh());
 					}
 				},
 				runStartedNanos);
@@ -2291,6 +2293,9 @@ public class Main extends Application implements ParkingListener {
 		}
 		if (parkingLotsView != null) {
 			parkingLotsView.refresh();
+		}
+		if (predictionsView != null) {
+			predictionsView.refresh();
 		}
 		refreshDashboardStateIndicators();
 		refreshSimulationMonitor();

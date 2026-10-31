@@ -22,10 +22,10 @@ public record CarPark(
         if (location == null || location.isBlank()) {
             throw new IllegalArgumentException("Car park location is required");
         }
-        if (distanceKm < 0) {
+        if (!Double.isFinite(distanceKm) || distanceKm < 0) {
             throw new IllegalArgumentException("Distance cannot be negative");
         }
-        if (hourlyRate < 0) {
+        if (!Double.isFinite(hourlyRate) || hourlyRate < 0) {
             throw new IllegalArgumentException("Hourly rate cannot be negative");
         }
         if (totalCapacity < 1) {
