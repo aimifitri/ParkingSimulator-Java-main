@@ -302,11 +302,17 @@ public class SimulationMonitorView extends BorderPane {
 		strategyValue = new Label("SEMAPHORE");
 		strategyValue.getStyleClass().add("monitor-strategy-pill");
 
-		HBox statusRow = new HBox(16,
+		HBox statusRow = new HBox(12);
+		statusRow.setAlignment(Pos.CENTER_LEFT);
+		GridPane[] statusCards = {
 				kpiCard("STATE", stateValue, "Simulation lifecycle"),
 				kpiCard("ELAPSED", elapsedValue, "Run time"),
-				kpiCard("STRATEGY", strategyValue, "Concurrency control"));
-		statusRow.setAlignment(Pos.CENTER_LEFT);
+				kpiCard("STRATEGY", strategyValue, "Concurrency control")
+		};
+		for (GridPane card : statusCards) {
+			HBox.setHgrow(card, Priority.ALWAYS);
+			statusRow.getChildren().add(card);
+		}
 
 		root.getChildren().addAll(title, metrics, statusRow);
 		return root;
@@ -371,7 +377,7 @@ public class SimulationMonitorView extends BorderPane {
 
 		logTable = new TableView<>(logRows);
 		logTable.getStyleClass().add("monitor-log-table");
-		logTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
+		logTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
 
 		TableColumn<LogRow, String> timeCol = new TableColumn<>("Time");
 		timeCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().time()));
@@ -431,10 +437,12 @@ public class SimulationMonitorView extends BorderPane {
 	private GridPane kpiCard(String title, Label value, String caption) {
 		GridPane card = new GridPane();
 		card.getStyleClass().add("monitor-kpi-card");
+		card.setMaxWidth(Double.MAX_VALUE);
 		Label t = new Label(title);
 		t.getStyleClass().add("monitor-kpi-title-small");
 		Label c = new Label(caption);
 		c.getStyleClass().add("monitor-kpi-caption");
+		c.setWrapText(true);
 		value.getStyleClass().add("monitor-kpi-value");
 		GridPane.setConstraints(t, 0, 0);
 		GridPane.setConstraints(value, 0, 1);

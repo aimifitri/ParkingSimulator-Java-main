@@ -87,6 +87,52 @@
     -fx-border-color: transparent transparent #E2E8F0 transparent;
 }
 
+.root.theme-light .monitor-control-bar {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+.root.theme-light .monitor-control-label,
+.root.theme-light .monitor-health-name {
+    -fx-text-fill: #334155;
+}
+.root.theme-light .monitor-kpi-title,
+.root.theme-light .monitor-section-title {
+    -fx-text-fill: #0F172A;
+}
+.root.theme-light .monitor-kpi-title-small,
+.root.theme-light .monitor-kpi-caption {
+    -fx-text-fill: #64748B;
+}
+.root.theme-light .monitor-kpi-card,
+.root.theme-light .monitor-health-chip,
+.root.theme-light .monitor-log-section {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+    -fx-effect: dropshadow(gaussian, rgba(15, 23, 42, 0.06), 10, 0, 0, 2);
+}
+.root.theme-light .monitor-kpi-value {
+    -fx-text-fill: #0F172A;
+}
+.root.theme-light .monitor-health-warn,
+.root.theme-light .monitor-state-stopped {
+    -fx-text-fill: #B42318;
+    -fx-background-color: #FEF2F2;
+}
+.root.theme-light .monitor-log-table {
+    -fx-background-color: #FFFFFF;
+    -fx-border-color: #E2E8F0;
+}
+.root.theme-light .monitor-log-table .column-header-background,
+.root.theme-light .monitor-log-table .column-header,
+.root.theme-light .monitor-log-table .filler {
+    -fx-background-color: #F1F5F9;
+    -fx-border-color: transparent transparent #E2E8F0 transparent;
+}
+.root.theme-light .monitor-log-table .column-header .label,
+.root.theme-light .monitor-log-table .table-cell {
+    -fx-text-fill: #334155;
+}
+
 .root.theme-light .available-slot {
     -fx-background-color: #D1FAE5;
     -fx-text-fill: #166534;
