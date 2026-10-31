@@ -116,7 +116,7 @@ public class Main extends Application implements ParkingListener {
 	private Label dashboardActivityStateValue;
 	private Label dashboardOccupancySummary;
 	private ProgressBar dashboardOccupancyProgress;
-	private ScrollPane simulationMonitorView;
+	private SimulationMonitorView simulationMonitorView;
 	private Label monitorStateValue;
 	private Label monitorElapsedValue;
 	private Label monitorCapacityValue;
@@ -457,116 +457,27 @@ public class Main extends Application implements ParkingListener {
 		return simulationMonitorView;
 	}
 
-	private ScrollPane createSimulationMonitorView() {
-		monitorStateValue = new Label();
-		monitorStateValue.getStyleClass().add("monitor-state-pill");
-		monitorElapsedValue = metricValue("0.0 s");
-		monitorStartButton = new Button("Start simulation");
-		monitorStartButton.getStyleClass().add("primary-button");
-		monitorStartButton.setOnAction(event -> startSimulationFromMonitor());
-		monitorStopButton = new Button("Stop simulation");
-		monitorStopButton.getStyleClass().add("secondary-button");
-		monitorStopButton.setOnAction(event -> stopSimulation());
-		monitorResetButton = new Button("Reset run");
-		monitorResetButton.getStyleClass().add("secondary-button");
-		monitorResetButton.setOnAction(event -> {
-			restartSimulation();
-			if (simulationState == SimulationState.RUNNING && monitorElapsedTimeline != null) {
-				monitorElapsedTimeline.play();
-			}
-		});
-
-		Label controlsTitle = new Label("Simulation controls");
-		controlsTitle.getStyleClass().add("section-title");
-		Label stateCaption = new Label("Current state");
-		stateCaption.getStyleClass().add("section-caption");
-		Label elapsedCaption = new Label("Elapsed");
-		elapsedCaption.getStyleClass().add("section-caption");
-		VBox stateBox = new VBox(5, stateCaption, monitorStateValue);
-		VBox elapsedBox = new VBox(5, elapsedCaption, monitorElapsedValue);
-		HBox actions = new HBox(8, monitorStartButton, monitorStopButton, monitorResetButton);
-		actions.setAlignment(Pos.CENTER_LEFT);
-		Region spacer = new Region();
-		HBox.setHgrow(spacer, Priority.ALWAYS);
-		HBox statusRow = new HBox(18, stateBox, elapsedBox, spacer, actions);
-		statusRow.setAlignment(Pos.CENTER_LEFT);
-		VBox controls = new VBox(12, controlsTitle, statusRow);
-		controls.getStyleClass().add("panel");
-
-		monitorCapacityValue = metricValue("0");
-		monitorOccupiedValue = metricValue("0");
-		monitorAvailableValue = metricValue("0");
-		monitorReservedValue = metricValue("0");
-		monitorWaitingValue = metricValue("0");
-		monitorExitsValue = metricValue("0");
-		monitorAverageWaitValue = metricValue("0.00 s");
-		monitorStrategyValue = metricValue("SEMAPHORE");
-		GridPane metrics = new GridPane();
-		metrics.setHgap(10);
-		metrics.setVgap(10);
-		metrics.add(monitorMetric("CAPACITY", monitorCapacityValue, "Configured spaces"), 0, 0);
-		metrics.add(monitorMetric("OCCUPIED", monitorOccupiedValue, "Currently parked"), 1, 0);
-		metrics.add(monitorMetric("AVAILABLE", monitorAvailableValue, "Ready to use"), 2, 0);
-		metrics.add(monitorMetric("RESERVED", monitorReservedValue, "Unoccupied with future bookings"), 3, 0);
-		metrics.add(monitorMetric("WAITING", monitorWaitingValue, "Vehicles in queue"), 0, 1);
-		metrics.add(monitorMetric("COMPLETED EXITS", monitorExitsValue, "Vehicles that departed"), 1, 1);
-		metrics.add(monitorMetric("AVG. WAIT", monitorAverageWaitValue, "Completed parking visits"), 2, 1);
-		metrics.add(monitorMetric("STRATEGY", monitorStrategyValue, "Concurrency control"), 3, 1);
-		for (int column = 0; column < 4; column++) {
-			ColumnConstraints constraints = new ColumnConstraints();
-			constraints.setPercentWidth(25);
-			constraints.setHgrow(Priority.ALWAYS);
-			metrics.getColumnConstraints().add(constraints);
-		}
-
-		Label spacesTitle = new Label("Parking space status");
-		spacesTitle.getStyleClass().add("section-title");
-		HBox legend = new HBox(12,
-				legendDot("available-dot"), new Label("Available"),
-				legendDot("occupied-dot"), new Label("Occupied"),
-				legendDot("reserved-dot"), new Label("Reserved"));
-		legend.getStyleClass().add("legend");
-		legend.setAlignment(Pos.CENTER_LEFT);
-		monitorSpaceTiles = new TilePane();
-		monitorSpaceTiles.setPrefColumns(4);
-		monitorSpaceTiles.setHgap(9);
-		monitorSpaceTiles.setVgap(9);
-		monitorSpaceTiles.setAlignment(Pos.TOP_LEFT);
-		ScrollPane spaceScroll = new ScrollPane(monitorSpaceTiles);
-		spaceScroll.setFitToWidth(true);
-		spaceScroll.setPrefHeight(310);
-		spaceScroll.getStyleClass().add("lot-scroll");
-		VBox spaces = new VBox(12, spacesTitle, legend, spaceScroll);
-		spaces.getStyleClass().add("panel");
-		spaces.setMinWidth(490);
-		HBox.setHgrow(spaces, Priority.ALWAYS);
-
-		Label activityTitle = new Label("Recent activity");
-		activityTitle.getStyleClass().add("section-title");
-		monitorActivityLog.setItems(activityEntries);
-		monitorActivityLog.getStyleClass().add("activity-log");
-		monitorActivityLog.setPlaceholder(new Label("Simulation events will appear here."));
-		monitorActivityLog.setFocusTraversable(false);
-		monitorActivityLog.setPrefHeight(340);
-		monitorActivityLog.setMinHeight(240);
-		VBox activity = new VBox(12, activityTitle, monitorActivityLog);
-		activity.getStyleClass().add("panel");
-		activity.setMinWidth(270);
-		activity.setPrefWidth(330);
-		VBox.setVgrow(monitorActivityLog, Priority.ALWAYS);
-		HBox live = new HBox(14, spaces, activity);
-		live.setAlignment(Pos.TOP_LEFT);
-		VBox.setVgrow(live, Priority.ALWAYS);
-
-		VBox content = new VBox(14, controls, metrics, live);
-		content.setPadding(new Insets(0, 2, 2, 2));
-		content.setFillWidth(true);
-		ScrollPane scroll = new ScrollPane(content);
-		scroll.setFitToWidth(true);
-		scroll.getStyleClass().add("monitor-scroll");
-		VBox.setVgrow(scroll, Priority.ALWAYS);
-		refreshSimulationMonitor();
-		return scroll;
+	private SimulationMonitorView createSimulationMonitorView() {
+		SimulationMonitorView view = new SimulationMonitorView(
+				() -> parking,
+				this::startSimulationFromMonitor,
+				this::stopSimulation,
+				this::restartSimulation,
+				selectedStrategy -> {
+					syncStrategy = selectedStrategy;
+					if (simulationMonitorView != null) {
+						simulationMonitorView.setStrategy(selectedStrategy);
+						simulationMonitorView.addLogRow("System", "INFO",
+								selectedStrategy == 1
+										? "Semaphore Strategy selected for the simulation run."
+										: "Mutex Strategy selected for the simulation run.");
+					}
+				},
+				() -> simulationStartedNanos == 0 ? null : simulationStartedNanos);
+		view.setStrategy(syncStrategy);
+		view.setProcessedCount(completedVehicleExits);
+		view.refresh();
+		return view;
 	}
 
 	private VBox monitorMetric(String title, Label value, String caption) {
@@ -612,42 +523,17 @@ public class Main extends Application implements ParkingListener {
 	}
 
 	private void refreshSimulationMonitor() {
-		if (monitorStateValue == null) {
+		if (simulationMonitorView == null) {
 			return;
 		}
-		monitorStateValue.setText(switch (simulationState) {
+		simulationMonitorView.setState(switch (simulationState) {
 			case IDLE -> "IDLE";
 			case RUNNING -> "RUNNING";
 			case STOPPED -> "STOPPED";
 		});
-		monitorStateValue.getStyleClass().removeAll("monitor-state-idle", "monitor-state-running", "monitor-state-stopped");
-		monitorStateValue.getStyleClass().add(switch (simulationState) {
-			case IDLE -> "monitor-state-idle";
-			case RUNNING -> "monitor-state-running";
-			case STOPPED -> "monitor-state-stopped";
-		});
-		monitorStartButton.setDisable(simulationState == SimulationState.RUNNING);
-		monitorStopButton.setDisable(simulationState != SimulationState.RUNNING);
-		monitorResetButton.setDisable(simulationState == SimulationState.IDLE);
-
-		Parking.SpaceSnapshot snapshot = currentSpaceSnapshot();
-		monitorCapacityValue.setText(String.valueOf(snapshot.totalCount()));
-		monitorOccupiedValue.setText(String.valueOf(snapshot.occupiedCount()));
-		monitorAvailableValue.setText(String.valueOf(snapshot.availableCount()));
-		monitorReservedValue.setText(String.valueOf(snapshot.reservedCount()));
-		monitorWaitingValue.setText(String.valueOf(snapshot.waitingCount()));
-		monitorExitsValue.setText(String.valueOf(completedVehicleExits));
-		monitorAverageWaitValue.setText(String.format(Locale.ROOT, "%.2f s", averageQueueWaitMillis / 1000.0));
-		monitorStrategyValue.setText(syncStrategy == 1 ? "SEMAPHORE" : "MUTEX");
-		ensureMonitorSpaceTiles(snapshot.totalCount());
-		for (Parking.SpaceState state : snapshot.spaces()) {
-			CustomRectangle tile = monitorSlotTiles.get(state.slotNumber());
-			if (tile != null) {
-				Reservation upcoming = state.reservations().stream().findFirst().orElse(null);
-				tile.render(state.status(), state.vehicleId(), upcoming, false);
-			}
-		}
-		refreshMonitorElapsed();
+		simulationMonitorView.setStrategy(syncStrategy);
+		simulationMonitorView.setProcessedCount(completedVehicleExits);
+		simulationMonitorView.refresh();
 	}
 
 	private void ensureMonitorSpaceTiles(int capacity) {
@@ -2174,6 +2060,13 @@ public class Main extends Application implements ParkingListener {
 		refreshSimulationMonitor();
 		logEvent(currentRun, "Simulation started · " + numCars + " cars · " + nbrPlaces + " slots · "
 				+ reservationManager.all().size() + " reservations · seed " + simulationSeed);
+		runOnFxThread(() -> {
+			if (simulationMonitorView != null) {
+				simulationMonitorView.addLogRow("System", "INFO",
+						"Simulation started with " + numCars + " cars, " + nbrPlaces + " slots using "
+								+ (syncStrategy == 1 ? "Semaphore" : "Mutex") + " strategy.");
+			}
+		});
 
 		spawnedCarCount = numCars;
 		for (int index = 0; index < numCars; index++) {
@@ -2182,6 +2075,13 @@ public class Main extends Application implements ParkingListener {
 			arrival.setOnFinished(event -> {
 				String vehicleId = "Car " + carNumber;
 				logEvent(currentRun, vehicleId + " arrived and is attempting to park.");
+				runOnFxThread(() -> {
+					if (simulationMonitorView != null) {
+						simulationMonitorView.addLogRow(vehicleId, "INFO",
+								vehicleId + " arrived and requested "
+										+ (syncStrategy == 1 ? "Semaphore" : "Mutex") + " permit.");
+					}
+				});
 				Voiture car = new Voiture(vehicleId, currentRun, runParkingDurationMillis);
 				carThreads.add(car);
 				car.start();
@@ -2266,6 +2166,10 @@ public class Main extends Application implements ParkingListener {
 					.toMillis(System.nanoTime() - simulationStartedNanos);
 			simulationState = SimulationState.STOPPED;
 			logEventOnFxThread("Simulation stopped; active vehicle threads are shutting down.");
+			if (simulationMonitorView != null) {
+				simulationMonitorView.addLogRow("System", "WARN",
+						"Simulation stopped; active vehicle threads are shutting down.");
+			}
 		}
 		if (monitorElapsedTimeline != null) {
 			monitorElapsedTimeline.stop();
@@ -2327,6 +2231,12 @@ public class Main extends Application implements ParkingListener {
 			updateMetrics(averageWaitValue.getText());
 			recordActualOccupancy(occupied);
 			logEventOnFxThread(carName + " parked in Slot " + (place + 1) + " · waited " + formatDuration(waitMillis));
+			if (simulationMonitorView != null) {
+				simulationMonitorView.addLogRow(carName, "PARKED",
+						carName + " acquired slot A" + String.format("%02d", place + 1));
+				simulationMonitorView.setProcessedCount(completedVehicleExits);
+				simulationMonitorView.refresh();
+			}
 		});
 	}
 
@@ -2347,6 +2257,12 @@ public class Main extends Application implements ParkingListener {
 				}
 			}
 			logEventOnFxThread(carName + " left Slot " + (place + 1));
+			if (simulationMonitorView != null) {
+				simulationMonitorView.addLogRow(carName, "RELEASED",
+						carName + " released slot A" + String.format("%02d", place + 1));
+				simulationMonitorView.setProcessedCount(completedVehicleExits);
+				simulationMonitorView.refresh();
+			}
 		});
 	}
 
@@ -2359,6 +2275,13 @@ public class Main extends Application implements ParkingListener {
 					lastReportedWaitingCount = waiting;
 				}
 				updateMetrics(averageWaitValue.getText());
+				if (simulationMonitorView != null) {
+					simulationMonitorView.refresh();
+					if (waiting > 0) {
+						simulationMonitorView.addLogRow("Worker pool", "WAITING",
+								waiting + " vehicle(s) blocked on capacity pool.");
+					}
+				}
 			}
 		});
 	}
