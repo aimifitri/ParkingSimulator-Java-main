@@ -1,7 +1,7 @@
 # Variables
 PROJECT_DIR := $(CURDIR)
-SRC_DIR := $(PROJECT_DIR)/src/main/java/com/example/ParkingSimulator
-MAIN_CLASS := com.example.ParkingSimulator.Main
+SRC_DIR := $(PROJECT_DIR)/src/main/java/com/parkwise
+MAIN_CLASS := com.parkwise.Main
 MVNW := $(PROJECT_DIR)/mvnw
 
 # Check if Maven is installed

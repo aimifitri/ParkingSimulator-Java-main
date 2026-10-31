@@ -165,4 +165,4 @@ The choice between Semaphore and Mutex in the parking simulator depends on your 
 
 Each approach has its own set of trade-offs, and the best choice will depend on the desired balance between concurrency, simplicity, and resource management.
 
-Classes Path: src/main/java/com/example/ParkingSimulator
+Classes Path: src/main/java/com/parkwise

@@ -1,6 +1,6 @@
 # Dataset attribution
 
-The application bundles `src/main/resources/com/example/ParkingSimulator/parking-birmingham.csv` for offline historical occupancy prediction.
+The application bundles `src/main/resources/com/parkwise/parking-birmingham.csv` for offline historical occupancy prediction.
 
 - **Dataset:** Parking Birmingham, donated by Daniel Stolfi to the UCI Machine Learning Repository.
 - **Source:** [UCI dataset page](https://archive.ics.uci.edu/dataset/482/parking%2Bbirmingham); [DOI 10.24432/C51K5Z](https://doi.org/10.24432/C51K5Z).
