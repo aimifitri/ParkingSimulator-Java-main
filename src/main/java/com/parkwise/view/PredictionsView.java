@@ -1,12 +1,7 @@
 package com.parkwise.view;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
 import com.parkwise.model.CarPark;
 import com.parkwise.model.Parking;
-import com.parkwise.model.Reservation;
+import com.parkwise.model.RecommendationResult;
 import com.parkwise.service.ArrivalSchedule;
 import com.parkwise.service.CarParkRepository;
 import com.parkwise.service.HistoricalOccupancyPredictor;
@@ -38,7 +33,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.util.Duration;
 
 /**
  * Screen 5 of the ParkWise redesign: the Smart Prediction &amp; Recommendation
@@ -56,7 +50,6 @@ public class PredictionsView extends BorderPane {
 	private final Supplier<Integer> capacitySupplier;
 	private final Supplier<Integer> numCarsSupplier;
 	private final Supplier<Integer> arrivalWindowSupplier;
-	private final Supplier<Integer> durationSupplier;
 	private final Supplier<Integer> seedSupplier;
 	private final Supplier<Long> startNanosSupplier;
 	private final Consumer<CarPark> onBookNow;
@@ -96,7 +89,6 @@ public class PredictionsView extends BorderPane {
 		this.capacitySupplier = capacitySupplier;
 		this.numCarsSupplier = numCarsSupplier;
 		this.arrivalWindowSupplier = arrivalWindowSupplier;
-		this.durationSupplier = durationSupplier;
 		this.seedSupplier = seedSupplier;
 		this.startNanosSupplier = startNanosSupplier;
 		this.onBookNow = onBookNow;
@@ -370,6 +362,7 @@ public class PredictionsView extends BorderPane {
 		return card;
 	}
 
+	@SuppressWarnings("unchecked")
 	private VBox buildForecastSection() {
 		VBox section = new VBox(12);
 		section.getStyleClass().add("preds-forecast-section");
@@ -394,7 +387,7 @@ public class PredictionsView extends BorderPane {
 		predictedSeries.setName("Predicted occupancy");
 		actualSeries = new XYChart.Series<>();
 		actualSeries.setName("Actual occupancy");
-		forecastChart.getData().addAll(predictedSeries, actualSeries);
+		forecastChart.getData().addAll(new XYChart.Series[] { predictedSeries, actualSeries });
 
 		HBox metrics = new HBox(16);
 		metrics.getStyleClass().add("preds-forecast-metrics");

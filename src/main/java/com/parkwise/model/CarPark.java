@@ -1,9 +1,4 @@
 package com.parkwise.model;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
 
 /** Immutable domain model for a multi-lot car park. */
 public record CarPark(

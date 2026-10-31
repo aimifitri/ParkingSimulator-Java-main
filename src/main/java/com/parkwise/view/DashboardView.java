@@ -1,9 +1,8 @@
 package com.parkwise.view;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
+
+import com.parkwise.model.CarPark;
+import com.parkwise.model.Parking;
+import com.parkwise.service.CarParkRepository;
 
 import java.time.LocalDate;
 import java.util.HashMap;
@@ -23,19 +22,13 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.Separator;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 /**
  * Redesigned home dashboard view (Screen 1 of the visual mockup).
@@ -51,7 +44,6 @@ public class DashboardView extends BorderPane {
 	private final Supplier<String> statusText;
 	private final Supplier<String> strategyText;
 	private final List<String> activityEntries;
-	private final Runnable onSpawnVehicle;
 	private final Runnable onSettings;
 	private final Runnable onRestart;
 	private final Runnable onViewAllCarParks;
@@ -75,8 +67,6 @@ public class DashboardView extends BorderPane {
 	private Label gridOccValue;
 	private Label gridAvailValue;
 	private Label gridResValue;
-	private Parking parking;
-
 	public DashboardView(CarParkRepository repository,
 			Supplier<Parking> parkingSupplier,
 			Supplier<String> statusText,
@@ -107,7 +97,6 @@ public class DashboardView extends BorderPane {
 		this.statusText = statusText;
 		this.strategyText = strategyText;
 		this.activityEntries = activityEntries;
-		this.onSpawnVehicle = onSpawnVehicle;
 		this.onSettings = onSettings;
 		this.onRestart = onRestart;
 		this.onViewAllCarParks = onViewAllCarParks;
@@ -120,7 +109,7 @@ public class DashboardView extends BorderPane {
 	}
 
 	public void setParking(Parking parking) {
-		this.parking = parking;
+		// The dashboard reads live state via the supplier; no cached field is required.
 	}
 
 	public void refresh() {

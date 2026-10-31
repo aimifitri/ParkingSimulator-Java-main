@@ -1,14 +1,9 @@
 package com.parkwise.view;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
+
+import com.parkwise.model.Parking;
 
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -29,18 +24,13 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.ColumnConstraints;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.FontWeight;
 import javafx.util.Duration;
 
 /**
@@ -83,7 +73,6 @@ public class SimulationMonitorView extends BorderPane {
 	private final ObservableList<LogRow> logRows = FXCollections.observableArrayList();
 	private TextField logFilter;
 	private int processedCount = 0;
-	private long lastProcessedNanos = System.nanoTime();
 
 	private Timeline elapsedTimeline;
 
@@ -247,7 +236,6 @@ public class SimulationMonitorView extends BorderPane {
 			}
 			logRows.clear();
 			processedCount = 0;
-			lastProcessedNanos = System.nanoTime();
 		});
 
 		Label strategyLabel = new Label("Concurrency strategy");
@@ -383,7 +371,7 @@ public class SimulationMonitorView extends BorderPane {
 
 		logTable = new TableView<>(logRows);
 		logTable.getStyleClass().add("monitor-log-table");
-		logTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+		logTable.setColumnResizePolicy(TableView.UNCONSTRAINED_RESIZE_POLICY);
 
 		TableColumn<LogRow, String> timeCol = new TableColumn<>("Time");
 		timeCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().time()));
@@ -421,7 +409,9 @@ public class SimulationMonitorView extends BorderPane {
 		messageCol.setCellValueFactory(data -> new ReadOnlyStringWrapper(data.getValue().message()));
 		messageCol.setPrefWidth(Region.USE_COMPUTED_SIZE);
 
-		logTable.getColumns().setAll(timeCol, threadCol, levelCol, messageCol);
+		@SuppressWarnings("unchecked")
+		TableColumn<LogRow, ?>[] columns = (TableColumn<LogRow, ?>[]) new TableColumn[] { timeCol, threadCol, levelCol, messageCol };
+		logTable.getColumns().setAll(columns);
 		logTable.setPrefHeight(340);
 		logTable.setMinHeight(240);
 		VBox.setVgrow(logTable, Priority.ALWAYS);

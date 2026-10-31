@@ -1,14 +1,18 @@
 package com.parkwise;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
+
+import com.parkwise.model.BookingRecord;
 import com.parkwise.model.Car;
 import com.parkwise.model.CarPark;
 import com.parkwise.model.Parking;
 import com.parkwise.model.ParkingListener;
 import com.parkwise.model.Reservation;
+import com.parkwise.service.ArrivalSchedule;
+import com.parkwise.service.CarParkRepository;
+import com.parkwise.service.HistoricalOccupancyPredictor;
+import com.parkwise.service.OccupancyForecast;
+import com.parkwise.service.ReservationManager;
+import com.parkwise.strategy.ConcurrencyStrategy;
+import com.parkwise.strategy.SemaphoreStrategy;
 import com.parkwise.view.AppShell;
 import com.parkwise.view.CustomRectangle;
 import com.parkwise.view.DashboardView;
@@ -17,11 +21,6 @@ import com.parkwise.view.PredictionsView;
 import com.parkwise.view.ReportsView;
 import com.parkwise.view.ReservationView;
 import com.parkwise.view.SimulationMonitorView;
-import com.parkwise.service.ArrivalSchedule;
-import com.parkwise.service.CarParkRepository;
-import com.parkwise.service.HistoricalOccupancyPredictor;
-import com.parkwise.service.OccupancyForecast;
-import com.parkwise.service.ReservationManager;
 
 import javafx.animation.PauseTransition;
 import javafx.animation.KeyFrame;
@@ -73,7 +72,6 @@ import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.util.Duration;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Instant;
@@ -93,6 +91,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@SuppressWarnings("unused")
 public class Main extends Application implements ParkingListener {
 	private static final int MAX_LOG_ENTRIES = 100;
 	private static final Logger LOGGER = Logger.getLogger(Main.class.getName());
@@ -141,22 +140,7 @@ public class Main extends Application implements ParkingListener {
 	private Label dashboardOccupancySummary;
 	private ProgressBar dashboardOccupancyProgress;
 	private SimulationMonitorView simulationMonitorView;
-	private Label monitorStateValue;
 	private Label monitorElapsedValue;
-	private Label monitorCapacityValue;
-	private Label monitorOccupiedValue;
-	private Label monitorAvailableValue;
-	private Label monitorReservedValue;
-	private Label monitorWaitingValue;
-	private Label monitorExitsValue;
-	private Label monitorAverageWaitValue;
-	private Label monitorStrategyValue;
-	private Button monitorStartButton;
-	private Button monitorStopButton;
-	private Button monitorResetButton;
-	private TilePane monitorSpaceTiles;
-	private final Map<Integer, CustomRectangle> monitorSlotTiles = new HashMap<>();
-	private final ListView<String> monitorActivityLog = new ListView<>();
 	private final javafx.collections.ObservableList<String> activityEntries = FXCollections.observableArrayList();
 	private ScrollPane reportsPage;
 	private Label reportCapacityValue;
@@ -500,13 +484,6 @@ public class Main extends Application implements ParkingListener {
 		return view;
 	}
 
-	private VBox monitorMetric(String title, Label value, String caption) {
-		VBox card = createMetricCard(title, value, caption);
-		card.setMinWidth(0);
-		card.setMaxWidth(Double.MAX_VALUE);
-		return card;
-	}
-
 	private void startSimulationFromMonitor() {
 		if (simulationState == SimulationState.RUNNING) {
 			return;
@@ -574,20 +551,6 @@ public class Main extends Application implements ParkingListener {
 		simulationMonitorView.refresh();
 	}
 
-	private void ensureMonitorSpaceTiles(int capacity) {
-		if (monitorSpaceTiles == null || monitorSlotTiles.size() == capacity) {
-			return;
-		}
-		monitorSlotTiles.clear();
-		monitorSpaceTiles.getChildren().clear();
-		for (int slotNumber = 1; slotNumber <= capacity; slotNumber++) {
-			CustomRectangle tile = new CustomRectangle(slotNumber);
-			tile.setFocusTraversable(false);
-			monitorSlotTiles.put(slotNumber, tile);
-			monitorSpaceTiles.getChildren().add(tile);
-		}
-	}
-
 	private void refreshMonitorElapsed() {
 		if (monitorElapsedValue == null) {
 			return;
@@ -596,46 +559,6 @@ public class Main extends Application implements ParkingListener {
 				? java.util.concurrent.TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - simulationStartedNanos)
 				: elapsedAtStopMillis;
 		monitorElapsedValue.setText(String.format(Locale.ROOT, "%.1f s", elapsedMillis / 1000.0));
-	}
-
-	private ScrollPane createParkingLotsPage() {
-		if (parkingLotsPage == null) {
-			lotTotalValue = metricValue("0");
-			lotAvailableValue = metricValue("0");
-			lotOccupiedValue = metricValue("0");
-			lotReservedValue = metricValue("0");
-			HBox summary = new HBox(12,
-					createMetricCard("TOTAL CAPACITY", lotTotalValue, "Configured spaces"),
-					createMetricCard("AVAILABLE", lotAvailableValue, "Ready to reserve"),
-					createMetricCard("OCCUPIED", lotOccupiedValue, "In active use"),
-					createMetricCard("RESERVED", lotReservedValue, "Unoccupied with future bookings"));
-			summary.getStyleClass().add("metrics-row");
-
-			Label spacesTitle = new Label("Parking space status");
-			spacesTitle.getStyleClass().add("section-title");
-			Label spacesCaption = new Label("Select a space to inspect its current status and reservation details.");
-			spacesCaption.getStyleClass().add("section-caption");
-			spacesCaption.setWrapText(true);
-			parkingLotPanel.getChildren().removeAll(parkingGridLegendAndFilter, parkingGrid);
-			parkingLotsGridPanel = new VBox(12, spacesTitle, spacesCaption,
-					parkingGridLegendAndFilter, parkingGrid);
-			parkingLotsGridPanel.getStyleClass().addAll("panel", "parking-lots-grid-card");
-			parkingLotsGridPanel.setMinWidth(0);
-			HBox.setHgrow(parkingLotsGridPanel, Priority.ALWAYS);
-
-			spaceDetailsPanel = createSpaceDetailsPanel();
-			parkingLotsContentRow = new HBox(16, parkingLotsGridPanel, spaceDetailsPanel);
-			parkingLotsContentRow.setAlignment(Pos.TOP_LEFT);
-			VBox.setVgrow(parkingLotsContentRow, Priority.ALWAYS);
-			VBox pageContent = new VBox(14, summary, parkingLotsContentRow);
-			pageContent.getStyleClass().add("parking-lots-page-content");
-			ScrollPane pageScroll = new ScrollPane(pageContent);
-			pageScroll.setFitToWidth(true);
-			pageScroll.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-			pageScroll.getStyleClass().add("parking-lots-page-scroll");
-			parkingLotsPage = pageScroll;
-		}
-		return parkingLotsPage;
 	}
 
 	private VBox createSpaceDetailsPanel() {
@@ -663,22 +586,6 @@ public class Main extends Application implements ParkingListener {
 		details.setMinWidth(250);
 		details.setPrefWidth(280);
 		return details;
-	}
-
-	private void attachParkingLotsPanels() {
-		if (parkingLotsGridPanel == null || parkingLotPanel == null || parkingLotsContentRow == null) {
-			return;
-		}
-		parkingLotPanel.getChildren().removeAll(parkingGridLegendAndFilter, parkingGrid);
-		if (!parkingLotsGridPanel.getChildren().contains(parkingGridLegendAndFilter)) {
-			parkingLotsGridPanel.getChildren().add(2, parkingGridLegendAndFilter);
-		}
-		if (!parkingLotsGridPanel.getChildren().contains(parkingGrid)) {
-			parkingLotsGridPanel.getChildren().add(parkingGrid);
-		}
-		if (!parkingLotsContentRow.getChildren().contains(parkingLotsGridPanel)) {
-			parkingLotsContentRow.getChildren().add(0, parkingLotsGridPanel);
-		}
 	}
 
 	private void attachDashboardPanels() {

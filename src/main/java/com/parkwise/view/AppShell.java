@@ -1,9 +1,4 @@
 package com.parkwise.view;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -18,6 +13,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.OverrunStyle;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
@@ -117,26 +113,33 @@ public final class AppShell extends BorderPane {
 		bar.setAlignment(Pos.CENTER_LEFT);
 
 		breadcrumbLabel.getStyleClass().add("top-header-breadcrumb");
+		breadcrumbLabel.setMinWidth(0);
+		breadcrumbLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
 
 		searchField.setPromptText("Search location, car park...");
 		searchField.getStyleClass().add("top-header-search");
 		searchField.setPrefWidth(280);
+		searchField.setMinWidth(120);
 		searchField.setMaxWidth(Double.MAX_VALUE);
 		HBox.setHgrow(searchField, Priority.ALWAYS);
 
 		Label weatherChip = new Label("28°C  Kuala Lumpur");
 		weatherChip.getStyleClass().add("top-header-weather");
+		weatherChip.setMinWidth(0);
+		weatherChip.setTextOverrun(OverrunStyle.ELLIPSIS);
+		clockLabel.setMinWidth(0);
+		clockLabel.setTextOverrun(OverrunStyle.ELLIPSIS);
 
 		Label userPill = new Label("Driver Online");
 		userPill.getStyleClass().add("top-header-user");
-
-		Region rightSpacer = new Region();
-		HBox.setHgrow(rightSpacer, Priority.ALWAYS);
+		userPill.setMinWidth(0);
+		userPill.setTextOverrun(OverrunStyle.ELLIPSIS);
 
 		HBox right = new HBox(12, clockLabel, weatherChip, userPill);
 		right.setAlignment(Pos.CENTER_RIGHT);
+		right.setMinWidth(0);
 
-		bar.getChildren().addAll(breadcrumbLabel, searchField, rightSpacer, right);
+		bar.getChildren().addAll(breadcrumbLabel, searchField, right);
 		return bar;
 	}
 

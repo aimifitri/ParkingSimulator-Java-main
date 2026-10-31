@@ -1,9 +1,9 @@
 package com.parkwise.view;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
+
+import com.parkwise.model.CarPark;
+import com.parkwise.model.Parking;
+import com.parkwise.model.Reservation;
+import com.parkwise.service.CarParkRepository;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,24 +15,17 @@ import java.util.function.Supplier;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.ToggleButton;
 import javafx.scene.control.ToggleGroup;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.TilePane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
-import javafx.scene.text.FontWeight;
 
 /**
  * Screen 2 of the ParkWise redesign: an interactive parking-lots inspector.
@@ -60,7 +53,6 @@ public class ParkingLotsView extends BorderPane {
 	private ToggleButton allFilter, availableFilter, occupiedFilter, reservedFilter;
 	private TilePane grid;
 	private final Map<Integer, CustomRectangle> slotTiles = new TreeMap<>();
-	private VBox detailsPanel;
 	private Label detailsTitle;
 	private Label detailsSpaceId;
 	private Label detailsStatus;

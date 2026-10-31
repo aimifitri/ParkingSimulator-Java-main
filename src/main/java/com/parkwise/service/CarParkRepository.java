@@ -1,9 +1,9 @@
 package com.parkwise.service;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
+
+import com.parkwise.model.BookingRecord;
+import com.parkwise.model.CarPark;
+import com.parkwise.model.Parking;
+import com.parkwise.model.ParkingListener;
 
 import java.util.List;
 import java.util.Map;

@@ -1,9 +1,4 @@
 package com.parkwise.model;
-import com.parkwise.model.*;
-import com.parkwise.view.*;
-import com.parkwise.service.*;
-import com.parkwise.strategy.*;
-import com.parkwise.*;
 
 /** The result of a car-park recommendation for a driver. */
 public record RecommendationResult(
